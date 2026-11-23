@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows.Forms;
 
 namespace TeleportTrainer
 {
@@ -278,6 +274,73 @@ namespace TeleportTrainer
             new Option("r331 >> r332", "0B 1B 25 C7 77 0D 77 46 FD B8 36 47 8C 06 AD 3F 03 32"),
             new Option("r331 >> r333", "99 4A 28 C9 36 E2 AB C6 6D F9 13 C9 00 6C AA BF 03 33"),
             new Option("r30f >> r334", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r406 >> r405", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r405 >> r406", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40a >> r406", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r406 >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40b >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40c >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40f >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40a >> r40b", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40a >> r40c", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40a >> r40f", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r410 >> r40f", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40f >> r410", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r411 >> r410", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40d >> r411", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r410 >> r411", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40e >> r40d", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r411 >> r40d", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r40d >> r40e", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
+            new Option("r500 >> r501", "D8 D6 99 C6 00 00 83 BB 9F 1F 95 C6 99 E8 7C 3F 05 01"),
+            new Option("r502 >> r501", "D7 8F 9B C5 00 80 04 C6 CE 35 4D 47 1E 52 1E C0 05 01"),
+            new Option("r501 >> r502", "9D 80 2B C7 58 9A 16 C2 73 45 66 C6 D7 A3 00 40 05 02"),
+            new Option("r502 >> r503", "00 00 0C 43 00 00 82 C4 00 E0 C9 45 DB 0F 49 40 05 03"),
+            new Option("r505 >> r504", "AF CB 19 47 93 17 48 45 11 55 D0 C6 CF 7C C0 BF 05 04"),
+            new Option("r506 >> r504", "14 7B 5C C6 B0 8E 29 45 C0 6A 03 47 74 1A 33 40 05 04"),
+            new Option("r504 >> r505", "0F F9 39 C7 60 46 3D 41 7D 5C DD 45 8E CA F1 3F 05 05"),
+            new Option("r507 >> r505", "10 F6 13 46 68 97 17 42 81 B7 3D C4 8B 3F 13 C0 05 05"),
+            new Option("r503 >> r506", "CB 95 58 46 C6 3D C6 45 51 74 73 45 24 8E BD BF 05 06"),
+            new Option("r504 >> r506", "35 25 8E 47 AF DA 0B C5 75 59 12 C7 3A F1 9C BF 05 06"),
+            new Option("r505 >> r507", "05 14 2E 46 06 42 5F C4 42 17 F0 C2 9B DB 56 3F 05 07"),
+            new Option("r506 >> r508", "00 70 7F 45 00 C8 82 C6 00 19 D5 C7 6C 1D 05 40 05 08"),
+            new Option("r50a >> r508", "CA 6C B1 C6 00 00 B2 3B B3 57 12 47 B6 98 EE 3F 05 08"),
+            new Option("r50b >> r508", "D0 87 5B 47 3E 0C F4 C6 A9 DB 2C C8 02 CE B8 BF 05 08"),
+            new Option("r50a >> r509", "44 EE CC 47 6A 80 A7 C4 1B 9F 9C C6 86 A7 39 40 05 09"),
+            new Option("r508 >> r50a", "F6 1D 77 47 E0 13 CD C1 A0 EB DF 46 9B C2 90 BF 05 0A"),
+            new Option("r509 >> r50a", "47 41 B7 43 D0 25 CD C1 6B 43 7A C3 0C 01 1A BE 05 0A"),
+            new Option("r508 >> r50b", "00 40 F1 45 00 00 7F C4 00 F0 25 C6 DE 7E BC 3F 05 0B"),
+            new Option("r510 >> r50c", "D6 43 27 C6 08 00 FA 45 27 83 81 C5 80 61 C0 3F 05 0C"),
+            new Option("r50e >> r50d", "16 8E 13 C7 21 2A F7 44 77 FE A1 C7 00 D9 CE BC 05 0D"),
+            new Option("r50f >> r50d", "20 B9 3F 46 80 BB 41 C0 C2 9D 06 C7 38 9E 24 BE 05 0D"),
+            new Option("r509 >> r50e", "62 86 0B 47 00 00 40 BA D2 76 11 C7 A5 CD 8D 3F 05 0E"),
+            new Option("r50d >> r50e", "7C F7 D2 C3 9B EF BC 45 E2 A2 70 44 80 7A 41 40 05 0E"),
+            new Option("r50f >> r50e", "B9 EE EA 46 F8 FF 79 45 4D 0F 42 46 34 5A 45 40 05 0E"),
+            new Option("r50d >> r50f", "0A AA 9F 46 FA BF 5A 45 01 04 0D 47 44 F0 44 C0 05 0F"),
+            new Option("r50e >> r50f", "9F B3 47 C2 F5 BF 5A 45 AD EB 13 C4 24 A1 96 3E 05 0F"),
+            new Option("r510 >> r50f", "92 B4 19 47 F4 BF 5A 45 21 E4 26 46 14 47 9E BF 05 0F"),
+            new Option("r50c >> r510", "19 47 AB 47 F8 DF AB 45 D5 9D 2B 47 86 A5 CC BF 05 10"),
+            new Option("r50f >> r510", "9A 3B 21 47 F7 BF 5A 45 0D E3 CC 46 28 F2 BB 3F 05 10"),
+            new Option("r50c >> r512", "B5 57 59 C7 5B 44 1E C7 E9 94 41 C5 D2 47 3C 40 05 12"),
+            new Option("r513 >> r512", "5F CC 5C 46 E0 4B 08 C7 F3 09 FB C6 70 DC FF BD 05 12"),
+            new Option("r512 >> r513", "56 1D 80 C7 FC FF F9 C4 B5 A9 4D C6 58 39 07 40 05 13"),
+            new Option("r514 >> r513", "14 BD 0C 47 00 00 44 BB 32 FE 1E C6 BE 9E F5 BF 05 13"),
+            new Option("r513 >> r514", "38 33 1B 47 DE 13 8B 43 A5 7B 19 C7 B8 54 D8 3F 05 14"),
+            new Option("r516 >> r515", "62 C5 3D C6 00 00 BC 3B BD 58 A4 C5 E7 F5 40 40 05 15"),
+            new Option("r514 >> r516", "CF F0 0B C5 70 75 0B 42 3E 2A 6F C5 E7 E1 C7 3E 05 16"),
+            new Option("r515 >> r516", "4B 4D 00 C3 00 00 9C BA 20 B7 F3 C5 80 60 10 BE 05 16"),
+            new Option("r517 >> r516", "2F 5B 15 47 F4 5F 9F C5 4F 7F B6 46 78 B6 47 C0 05 16"),
+            new Option("r516 >> r517", "62 45 00 C6 04 60 9F C5 D0 F7 26 43 70 21 90 BE 05 17"),
+            new Option("r517 >> r518", "BE 5C DF 46 DC 01 BD 45 30 3F 84 47 D9 CC 3E C0 05 18"),
+            new Option("r519 >> r518", "AB FD D3 46 A0 3D CC 45 8C 41 4D C6 B0 A0 81 3F 05 18"),
+            new Option("r518 >> r519", "82 67 C3 46 16 1D CF 45 0A 7E 68 C6 6D 5B 35 C0 05 19"),
+            new Option("r51a >> r519", "42 4F BD 46 AC DE 55 46 7C 8E 8F C7 3E 92 79 3F 05 19"),
+            new Option("r519 >> r51a", "F7 AB 60 46 6C 2A EC 45 90 BB C1 C6 ED 1C 3F BF 05 1A"),
+            new Option("r51a >> r51b", "54 FE F2 43 15 77 6E 45 A2 EE 02 C6 94 08 C3 BF 05 1B"),
+            new Option("r51c >> r51b", "52 60 D1 C5 0D D9 A3 45 24 38 B7 46 68 C3 3C 40 05 1B"),
+            new Option("r51b >> r51c", "7C 72 C0 C5 DF 57 A4 45 29 FD C4 46 16 2B 95 3F 05 1C"),
+            new Option("r51c >> r51d", "E6 1A 2C 46 66 9F 01 45 41 B7 34 C6 C6 32 68 BF 05 1D"),
+            new Option("r51d >> r51e", "00 20 91 C6 00 1E B6 46 00 20 21 47 00 00 6E BF 05 1E"), // Custom
         };
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -314,67 +377,82 @@ namespace TeleportTrainer
 
         public MainForm()
         {
-            Text = "TPT - Teleport Trainer (C# remake)";
-            Width = 460;
-            Height = 620;
+            Text = "Teleport Tool by tomazm";
+            Width = 530;
+            Height = 630;
             StartPosition = FormStartPosition.CenterScreen;
 
-            listBox = new ListBox();
-            listBox.Dock = DockStyle.Top;
-            listBox.Height = 420;
-            listBox.Font = new System.Drawing.Font("Consolas", 9);
+            listBox = new ListBox
+            {
+                Dock = DockStyle.Top,
+                Height = 420,
+                Font = new System.Drawing.Font("Consolas", 9)
+            };
             foreach (var o in Options)
                 listBox.Items.Add(o.Label + "    " + BitConverter.ToString(o.Values).Replace("-", " "));
             Controls.Add(listBox);
 
-            var panel = new Panel();
-            panel.Dock = DockStyle.Bottom;
-            panel.Height = 170;
+            var panel = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 170
+            };
             Controls.Add(panel);
 
-            var lblAddr = new Label();
-            lblAddr.Text = "Target address (hex):";
-            lblAddr.Left = 10;
-            lblAddr.Top = 10;
-            lblAddr.Width = 140;
+            var lblAddr = new Label
+            {
+                Text = "Target address (hex):",
+                Left = 10,
+                Top = 10,
+                Width = 140
+            };
             panel.Controls.Add(lblAddr);
 
-            txtAddress = new TextBox();
-            txtAddress.Left = 150;
-            txtAddress.Top = 8;
-            txtAddress.Width = 120;
-            txtAddress.Text = "0x00000000";
+            txtAddress = new TextBox
+            {
+                Text = "0x00000000",
+                Left = 150,
+                Top = 8,
+                Width = 120
+            };
             panel.Controls.Add(txtAddress);
 
-            btnTeleport = new Button();
-            btnTeleport.Text = "Teleport";
-            btnTeleport.Left = 280;
-            btnTeleport.Top = 6;
-            btnTeleport.Width = 80;
+            btnTeleport = new Button
+            {
+                Text = "Teleport",
+                Left = 280,
+                Top = 6,
+                Width = 80
+            };
             btnTeleport.Click += BtnTeleport_Click;
             panel.Controls.Add(btnTeleport);
 
-            btnScan = new Button();
-            btnScan.Text = "Find Address";
-            btnScan.Left = 365;
-            btnScan.Top = 6;
-            btnScan.Width = 80;
+            btnScan = new Button
+            {
+                Text = "Find Address",
+                Left = 365,
+                Top = 6,
+                Width = 80
+            };
             btnScan.Click += BtnScan_Click;
             panel.Controls.Add(btnScan);
 
-            lblStatus = new Label();
-            lblStatus.Left = 10;
-            lblStatus.Top = 40;
-            lblStatus.Width = 430;
-            lblStatus.Height = 40;
-            lblStatus.Text = "Select an option and click Teleport. Run as admin for memory access.";
+            lblStatus = new Label
+            {
+                Text = "Select an option and click Teleport. Run as admin for memory access.",
+                Left = 10,
+                Top = 40,
+                Width = 430
+            };
             panel.Controls.Add(lblStatus);
 
-            lblCount = new Label();
-            lblCount.Left = 10;
-            lblCount.Top = 80;
-            lblCount.Width = 430;
-            lblCount.Text = "Options loaded: " + Options.Count;
+            lblCount = new Label
+            {
+                Text = "Options loaded: " + Options.Count,
+                Left = 10,
+                Top = 70,
+                Width = 430
+            };
             panel.Controls.Add(lblCount);
         }
 
