@@ -488,13 +488,18 @@ namespace TeleportTrainer
                 lblStatus.Text = "OpenProcess failed. Run as admin.";
                 return;
             }
-            int written = 0;
-            bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out written);
+            // Write FF sentinels at relative offsets, then the teleport block.
+            byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
+            byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
+            int w1 = 0, w2 = 0, w3 = 0;
+            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out w1);
+            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out w2);
+            bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out w3);
             CloseHandle(hProc);
-            if (ok)
-                lblStatus.Text = "Teleported: " + opt.Label + " (" + written + " bytes)";
+            if (ok && ok1 && ok2)
+                lblStatus.Text = "Teleported: " + opt.Label + " (FF4=" + w1 + " FF32=" + w2 + " TP=" + w3 + " bytes)";
             else
-                lblStatus.Text = "WriteProcessMemory failed.";
+                lblStatus.Text = "WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + ").";
         }
 
         private void BtnScan_Click(object sender, EventArgs e)
