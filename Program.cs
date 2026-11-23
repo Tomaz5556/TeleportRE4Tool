@@ -274,24 +274,24 @@ namespace TeleportTrainer
             new Option("r331 >> r332", "0B 1B 25 C7 77 0D 77 46 FD B8 36 47 8C 06 AD 3F 03 32"),
             new Option("r331 >> r333", "99 4A 28 C9 36 E2 AB C6 6D F9 13 C9 00 6C AA BF 03 33"),
             new Option("r30f >> r334", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 03 34"),
-            new Option("r406 >> r405", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 05"),
-            new Option("r405 >> r406", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 06"),
-            new Option("r40a >> r406", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 06"),
-            new Option("r406 >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0A"),
-            new Option("r40b >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0A"),
-            new Option("r40c >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0A"),
-            new Option("r40f >> r40a", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0A"),
-            new Option("r40a >> r40b", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0B"),
-            new Option("r40a >> r40c", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0C"),
-            new Option("r40a >> r40f", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0F"),
-            new Option("r410 >> r40f", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0F"),
-            new Option("r40f >> r410", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 10"),
-            new Option("r411 >> r410", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 10"),
-            new Option("r40d >> r411", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 11"),
-            new Option("r410 >> r411", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 11"),
-            new Option("r40e >> r40d", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0D"),
-            new Option("r411 >> r40d", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0D"),
-            new Option("r40d >> r40e", "92 F8 B1 46 9C 4A 1E C7 57 27 C6 C6 2B 09 C8 3F 04 0E"),
+            new Option("r406 >> r405", "28 3F C1 C5 02 20 4B C6 C7 CE 07 46 2E C5 BC 3F 04 05"),
+            new Option("r405 >> r406", "C6 F0 02 C6 09 C0 DA C5 7F 97 FF 45 4D BA 1B C0 04 06"),
+            new Option("r40a >> r406", "0E A4 D8 46 DD FF F9 44 4B 80 06 46 DA 6F 68 BF 04 06"),
+            new Option("r406 >> r40a", "D6 5F 0E 45 71 A2 7A 45 58 DF 86 44 4F DA B6 BF 04 0A"),
+            new Option("r40b >> r40a", "AE EE 7D 45 39 09 7A 45 9E 1A B5 46 48 8C B6 3F 04 0A"),
+            new Option("r40c >> r40a", "B5 D9 1A C6 66 09 7A 45 12 D1 A9 45 C0 3C FA BB 04 0A"),
+            new Option("r40f >> r40a", "6E A8 5E C6 9D 44 9C 45 D9 31 ED C5 D1 5B C7 BD 04 0A"),
+            new Option("r40a >> r40b", "9E 9B DA 44 00 00 AC BB 78 8E 8C 45 3E 82 E6 BF 04 0B"),
+            new Option("r40a >> r40c", "BE 76 04 C5 00 00 5E BB 6A 65 45 45 C0 CA 3A 40 04 0C"),
+            new Option("r40a >> r40f", "E3 E6 92 C6 22 E2 79 44 3B 6C 29 45 CA 9B 3D 40 04 0F"),
+            new Option("r410 >> r40f", "6B 74 8E 46 00 00 4A BB C7 ED DA 45 14 B8 2F BE 04 0F"),
+            new Option("r40f >> r410", "8F 10 29 46 00 00 98 BB D0 16 E2 45 1A 6B 3C 40 04 10"),
+            new Option("r411 >> r410", "C5 D9 64 C5 00 00 5E BB F7 7F F7 C5 A9 99 F9 BD 04 10"),
+            new Option("r40d >> r411", "47 A4 22 C4 A8 D6 07 C5 9A B3 5E 46 EF 06 C1 BF 04 11"),
+            new Option("r410 >> r411", "7A 07 50 C6 D2 D3 D9 44 14 6A AF C6 88 FB 43 40 04 11"),
+            new Option("r40e >> r40d", "F5 B1 FA 45 00 00 C6 3B 58 E2 5F 46 5C 43 DA BF 04 0D"),
+            new Option("r411 >> r40d", "34 DA 06 C6 00 00 83 BB A8 8F E6 C5 8A F9 B2 3F 04 0D"),
+            new Option("r40d >> r40e", "23 74 70 C3 E9 28 78 C5 06 51 D4 46 49 A7 B8 3F 04 0E"),
             new Option("r500 >> r501", "D8 D6 99 C6 00 00 83 BB 9F 1F 95 C6 99 E8 7C 3F 05 01"),
             new Option("r502 >> r501", "D7 8F 9B C5 00 80 04 C6 CE 35 4D 47 1E 52 1E C0 05 01"),
             new Option("r501 >> r502", "9D 80 2B C7 58 9A 16 C2 73 45 66 C6 D7 A3 00 40 05 02"),
@@ -429,7 +429,7 @@ namespace TeleportTrainer
 
             btnScan = new Button
             {
-                Text = "Find Address",
+                Text = "Address",
                 Left = 365,
                 Top = 6,
                 Width = 80
@@ -512,13 +512,8 @@ namespace TeleportTrainer
                 lblStatus.Text = "OpenProcess (read) failed. Run as admin.";
                 return;
             }
-            // search for any option's byte pattern
-            IntPtr foundAddr = IntPtr.Zero;
-            foreach (var opt in Options)
-            {
-                foundAddr = SearchMemory(hProc, opt.Values);
-                if (foundAddr != IntPtr.Zero) break;
-            }
+            // search for any option's byte pattern in a single pass over memory
+            IntPtr foundAddr = SearchMemoryAll(hProc);
             CloseHandle(hProc);
             if (foundAddr != IntPtr.Zero)
             {
@@ -531,9 +526,122 @@ namespace TeleportTrainer
             }
         }
 
-        private IntPtr SearchMemory(IntPtr hProc, byte[] needle)
+        // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
+        private static int[][] AcGoto;
+        private static int[] AcFail;
+        private static List<int>[] AcOut;          // unique pattern indices
+        private static int[] AcPatLen;            // length per unique pattern
+        private static List<int>[] UniqueToOptions; // unique -> option indices
+        private static bool AcBuilt = false;
+        private static readonly object AcLock = new object();
+
+        private const int MEM_PRIVATE = 0x20000;
+
+        private static void BuildAc()
         {
-            IntPtr addr = IntPtr.Zero;
+            if (AcBuilt) return;
+            lock (AcLock)
+            {
+                if (AcBuilt) return;
+
+                // dedupe identical byte patterns, keep mapping to option indices
+                var uniqueNeedles = new List<byte[]>();
+                var uniqueToOpts = new List<List<int>>();
+                var keyToUnique = new Dictionary<string, int>();
+                for (int pi = 0; pi < Options.Count; pi++)
+                {
+                    string key = BitConverter.ToString(Options[pi].Values);
+                    if (!keyToUnique.TryGetValue(key, out int ui))
+                    {
+                        ui = uniqueNeedles.Count;
+                        keyToUnique[key] = ui;
+                        uniqueNeedles.Add(Options[pi].Values);
+                        uniqueToOpts.Add(new List<int>());
+                    }
+                    uniqueToOpts[ui].Add(pi);
+                }
+
+                int ucount = uniqueNeedles.Count;
+
+                // build trie
+                var next = new List<int[]>();
+                var fail = new List<int>();
+                var outs = new List<List<int>>();
+                next.Add(new int[256]);
+                for (int b = 0; b < 256; b++) next[0][b] = -1;
+                fail.Add(0);
+                outs.Add(new List<int>());
+
+                for (int ui = 0; ui < ucount; ui++)
+                {
+                    byte[] nd = uniqueNeedles[ui];
+                    int state = 0;
+                    for (int k = 0; k < nd.Length; k++)
+                    {
+                        int c = nd[k];
+                        if (next[state][c] == -1)
+                        {
+                            next[state][c] = next.Count;
+                            next.Add(new int[256]);
+                            for (int b = 0; b < 256; b++) next[next.Count - 1][b] = -1;
+                            fail.Add(0);
+                            outs.Add(new List<int>());
+                        }
+                        state = next[state][c];
+                    }
+                    outs[state].Add(ui);
+                }
+
+                // failure links (BFS)
+                var queue = new Queue<int>();
+                for (int c = 0; c < 256; c++)
+                {
+                    if (next[0][c] != -1)
+                    {
+                        int v = next[0][c];
+                        fail[v] = 0;
+                        queue.Enqueue(v);
+                    }
+                    else
+                    {
+                        next[0][c] = 0;
+                    }
+                }
+                while (queue.Count > 0)
+                {
+                    int u = queue.Dequeue();
+                    for (int c = 0; c < 256; c++)
+                    {
+                        int v = next[u][c];
+                        if (v != -1)
+                        {
+                            fail[v] = next[fail[u]][c];
+                            if (outs[fail[v]].Count > 0)
+                                outs[v].AddRange(outs[fail[v]]);
+                            queue.Enqueue(v);
+                        }
+                        else
+                        {
+                            next[u][c] = next[fail[u]][c];
+                        }
+                    }
+                }
+
+                AcGoto = next.ToArray();
+                AcFail = fail.ToArray();
+                AcOut = outs.ToArray();
+                AcPatLen = new int[ucount];
+                for (int i = 0; i < ucount; i++) AcPatLen[i] = uniqueNeedles[i].Length;
+                UniqueToOptions = uniqueToOpts.ToArray();
+                AcBuilt = true;
+            }
+        }
+
+        // Collect committed, readable regions.
+        // mode: 0 = all, 1 = only MEM_PRIVATE, 2 = exclude MEM_PRIVATE
+        private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode)
+        {
+            var regions = new List<Tuple<long,long>>();
             long current = 0;
             MEMORY_BASIC_INFORMATION mbi;
             int mbiSize = Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION));
@@ -543,44 +651,119 @@ namespace TeleportTrainer
                 if (r == 0) break;
                 long baseAddr = mbi.BaseAddress.ToInt64();
                 long regionSize = mbi.RegionSize.ToInt64();
-                if (mbi.State == 0x1000 && (mbi.Protect == 0x02 || mbi.Protect == 0x04 || mbi.Protect == 0x20 || mbi.Protect == 0x40 || mbi.Protect == 0x80))
+                if (mbi.State == 0x1000 && regionSize > 0 &&
+                    (mbi.Protect == 0x02 || mbi.Protect == 0x04 || mbi.Protect == 0x20 || mbi.Protect == 0x40 || mbi.Protect == 0x80))
                 {
-                    long offset = 0;
-                    while (offset < regionSize)
-                    {
-                        int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
-                        byte[] buf = new byte[chunk];
-                        int read = 0;
-                        if (ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out read) && read > 0)
-                        {
-                            int idx = IndexOf(buf, needle, read);
-                            if (idx >= 0)
-                                return new IntPtr(baseAddr + offset + idx);
-                        }
-                        offset += chunk;
-                    }
+                    bool isPrivate = (mbi.Type == MEM_PRIVATE);
+                    bool include = (mode == 0) || (mode == 1 && isPrivate) || (mode == 2 && !isPrivate);
+                    if (include)
+                        regions.Add(Tuple.Create(baseAddr, regionSize));
                 }
                 long next = baseAddr + regionSize;
                 if (next <= current) break;
                 current = next;
                 if (current < 0) break;
             }
-            return IntPtr.Zero;
+            return regions;
         }
 
-        private int IndexOf(byte[] haystack, byte[] needle, int haystackLen)
+        // Scan a set of regions in parallel, aggregate first occurrence per option (min address).
+        private static Tuple<bool,int> ScanRegions(IntPtr hProc, List<Tuple<long,long>> regions,
+            bool[] found, IntPtr[] foundAddr)
         {
-            if (needle.Length == 0) return 0;
-            for (int i = 0; i <= haystackLen - needle.Length; i++)
+            bool anyFound = false;
+            int remaining = 0;
+            for (int i = 0; i < found.Length; i++) if (!found[i]) remaining++;
+            object lockObj = new object();
+            bool allFound = false;
+
+            Parallel.ForEach(regions, (reg, state) =>
             {
-                bool match = true;
-                for (int j = 0; j < needle.Length; j++)
+                if (allFound) { state.Stop(); return; }
+                long baseAddr = reg.Item1;
+                long regionSize = reg.Item2;
+                long offset = 0;
+                var seenUnique = new bool[UniqueToOptions.Length];
+                while (offset < regionSize)
                 {
-                    if (haystack[i + j] != needle[j]) { match = false; break; }
+                    if (allFound) return;
+                    int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
+                    byte[] buf = new byte[chunk];
+                    int read = 0;
+                    if (ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out read) && read > 0)
+                    {
+                        int st = 0;
+                        for (int i = 0; i < read; i++)
+                        {
+                            if (allFound) return;
+                            st = AcGoto[st][buf[i]];
+                            if (AcOut[st].Count > 0)
+                            {
+                                foreach (int ui in AcOut[st])
+                                {
+                                    if (seenUnique[ui]) continue;
+                                    seenUnique[ui] = true;
+                                    int plen = AcPatLen[ui];
+                                    long candAddr = baseAddr + offset + i - plen + 1;
+                                    lock (lockObj)
+                                    {
+                                        foreach (int pi in UniqueToOptions[ui])
+                                        {
+                                            if (!found[pi])
+                                            {
+                                                found[pi] = true;
+                                                foundAddr[pi] = new IntPtr(candAddr);
+                                                remaining--;
+                                                anyFound = true;
+                                                if (remaining <= 0) allFound = true;
+                                            }
+                                            else
+                                            {
+                                                if (candAddr < foundAddr[pi].ToInt64())
+                                                    foundAddr[pi] = new IntPtr(candAddr);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    offset += chunk;
                 }
-                if (match) return i;
+            });
+
+            return Tuple.Create(anyFound, remaining);
+        }
+
+        private IntPtr SearchMemoryAll(IntPtr hProc)
+        {
+            BuildAc();
+            int n = Options.Count;
+            IntPtr[] foundAddr = new IntPtr[n];
+            bool[] found = new bool[n];
+            int remaining = n;
+            bool anyFound = false;
+
+            // First pass: only MEM_PRIVATE regions (fast path)
+            var privateRegions = CollectRegions(hProc, 1);
+            var r1 = ScanRegions(hProc, privateRegions, found, foundAddr);
+            anyFound = r1.Item1;
+            remaining = r1.Item2;
+
+            // Fallback: if highest-priority option not found, scan non-private regions
+            if (!found[0])
+            {
+                var otherRegions = CollectRegions(hProc, 2);
+                var r2 = ScanRegions(hProc, otherRegions, found, foundAddr);
+                anyFound = anyFound || r2.Item1;
+                remaining = r2.Item2;
             }
-            return -1;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (found[i]) return foundAddr[i];
+            }
+            return IntPtr.Zero;
         }
 
         [STAThread]
