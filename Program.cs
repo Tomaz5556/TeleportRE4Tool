@@ -625,7 +625,7 @@ namespace TeleportTrainer
                         return;
                     }
                     if (ok && ok1 && ok2 && okExtra)
-                        SetStatus("Teleported: " + opt.Label);
+                        SetStatus("Teleport para " + opt.Label);
                     else
                         SetStatus("WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").");
                 }
