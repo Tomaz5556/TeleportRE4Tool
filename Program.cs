@@ -23,9 +23,7 @@ namespace TeleportTrainer
         private TextBox txtAddress;
         private Button btnTeleport;
         private Button btnCancel;
-
         private Label lblStatus;
-        private Label lblCount;
 
         private static readonly List<Option> Options = new List<Option>
         {
@@ -379,15 +377,15 @@ namespace TeleportTrainer
         public MainForm()
         {
             Text = "Teleport Tool by tomazm";
-            Width = 530;
-            Height = 630;
+            Width = 675;
+            Height = 560;
             StartPosition = FormStartPosition.CenterScreen;
 
             listBox = new ListBox
             {
                 Dock = DockStyle.Top,
                 Height = 420,
-                Font = new System.Drawing.Font("Consolas", 9)
+                Font = new System.Drawing.Font("Consolas", 12)
             };
             foreach (var o in Options)
                 listBox.Items.Add(o.Label + "    " + BitConverter.ToString(o.Values).Replace("-", " "));
@@ -396,65 +394,75 @@ namespace TeleportTrainer
             var panel = new Panel
             {
                 Dock = DockStyle.Bottom,
-                Height = 170
+                Height = 100,
+                Font = new System.Drawing.Font("Consolas", 11)
             };
             Controls.Add(panel);
+
+            var inputPanel = new Panel
+            {
+                Width = 435,
+                Height = 36,
+                Top = 0
+            };
+            panel.Controls.Add(inputPanel);
 
             var lblAddr = new Label
             {
                 Text = "Target address (hex):",
-                Left = 10,
+                Left = 0,
                 Top = 10,
-                Width = 140
+                Width = 130
             };
-            panel.Controls.Add(lblAddr);
+            inputPanel.Controls.Add(lblAddr);
 
             txtAddress = new TextBox
             {
                 Text = "0x00000000",
-                Left = 150,
+                Left = 140,
                 Top = 8,
-                Width = 120
+                Width = 90
             };
-            panel.Controls.Add(txtAddress);
+            inputPanel.Controls.Add(txtAddress);
 
             btnTeleport = new Button
             {
                 Text = "Teleport",
-                Left = 280,
-                Top = 6,
-                Width = 80
+                Left = 260,
+                Top = 3,
+                Width = 90,
+                Height = 30
             };
             btnTeleport.Click += BtnTeleport_Click;
-            panel.Controls.Add(btnTeleport);
+            inputPanel.Controls.Add(btnTeleport);
 
             btnCancel = new Button
             {
                 Text = "Cancel",
-                Left = 365,
-                Top = 6,
-                Width = 80
+                Left = 355,
+                Top = 3,
+                Width = 80,
+                Height = 30
             };
             btnCancel.Click += BtnCancel_Click;
-            panel.Controls.Add(btnCancel);
+            inputPanel.Controls.Add(btnCancel);
 
             lblStatus = new Label
             {
                 Text = "Select an option and click Teleport. Run as admin for memory access.",
-                Left = 10,
+                Left = 0,
                 Top = 40,
-                Width = 430
+                Width = panel.ClientSize.Width,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
             panel.Controls.Add(lblStatus);
 
-            lblCount = new Label
+            panel.Resize += (sender, e) =>
             {
-                Text = "Options loaded: " + Options.Count,
-                Left = 10,
-                Top = 70,
-                Width = 430
+                inputPanel.Left = Math.Max(0, (panel.ClientSize.Width - inputPanel.Width) / 2);
+                lblStatus.Width = panel.ClientSize.Width;
             };
-            panel.Controls.Add(lblCount);
+            inputPanel.Left = Math.Max(0, (panel.ClientSize.Width - inputPanel.Width) / 2);
         }
 
         private CancellationTokenSource _cts;
@@ -617,7 +625,7 @@ namespace TeleportTrainer
                         return;
                     }
                     if (ok && ok1 && ok2 && okExtra)
-                        SetStatus("Teleported: " + opt.Label + " (FF4=" + w1 + " FF32=" + w2 + " TP=" + w3 + (noDoor ? " +extras" : "") + ")");
+                        SetStatus("Teleported: " + opt.Label);
                     else
                         SetStatus("WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").");
                 }
