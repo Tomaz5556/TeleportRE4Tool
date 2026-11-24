@@ -383,6 +383,7 @@ namespace TPT
         public MainForm()
         {
             Text = "Teleport Tool - RE4 2007";
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Width = 675;
             Height = 560;
             StartPosition = FormStartPosition.CenterScreen;
@@ -530,7 +531,7 @@ namespace TPT
             if (hProc == IntPtr.Zero) { SetStatus("OpenProcess failed. Run as admin."); return; }
             try
             {
-                IntPtr addr = new IntPtr(_patchAddr);
+                IntPtr addr = new(_patchAddr);
                 if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), _origFF4, _origFF4.Length, out _);
                 if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, _origFF32.Length, out _);
                 if (_origTeleport != null) WriteProcessMemory(hProc, addr, _origTeleport, _origTeleport.Length, out _);
@@ -714,7 +715,7 @@ namespace TPT
         private static int[] AcPatLen;            // length per unique pattern
         private static List<int>[] UniqueToOptions; // unique -> option indices
         private static bool AcBuilt = false;
-        private static readonly object AcLock = new object();
+        private static readonly Lock AcLock = new();
 
         private const int MEM_PRIVATE = 0x20000;
 
