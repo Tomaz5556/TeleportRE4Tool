@@ -22,7 +22,7 @@ namespace TeleportTrainer
         private ListBox listBox;
         private TextBox txtAddress;
         private Button btnTeleport;
-        private Button btnScan;
+
         private Label lblStatus;
         private Label lblCount;
 
@@ -427,16 +427,6 @@ namespace TeleportTrainer
             btnTeleport.Click += BtnTeleport_Click;
             panel.Controls.Add(btnTeleport);
 
-            btnScan = new Button
-            {
-                Text = "Address",
-                Left = 365,
-                Top = 6,
-                Width = 80
-            };
-            btnScan.Click += BtnScan_Click;
-            panel.Controls.Add(btnScan);
-
             lblStatus = new Label
             {
                 Text = "Select an option and click Teleport. Run as admin for memory access.",
@@ -464,16 +454,6 @@ namespace TeleportTrainer
                 return;
             }
             Option opt = Options[listBox.SelectedIndex];
-            IntPtr addr;
-            try
-            {
-                addr = new IntPtr(Convert.ToInt64(txtAddress.Text, 16));
-            }
-            catch
-            {
-                lblStatus.Text = "Invalid address.";
-                return;
-            }
 
             Process[] procs = Process.GetProcessesByName("game");
             if (procs.Length == 0)
@@ -482,12 +462,23 @@ namespace TeleportTrainer
                 return;
             }
             int pid = procs[0].Id;
-            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
+            IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
             if (hProc == IntPtr.Zero)
             {
                 lblStatus.Text = "OpenProcess failed. Run as admin.";
                 return;
             }
+
+            // Find address automatically (former Find Address logic)
+            IntPtr foundAddr = SearchMemoryAll(hProc);
+            if (foundAddr == IntPtr.Zero)
+            {
+                CloseHandle(hProc);
+                lblStatus.Text = "Pattern not found in memory. Teleport once first, then scan.";
+                return;
+            }
+            txtAddress.Text = "0x" + foundAddr.ToInt64().ToString("X");
+            IntPtr addr = foundAddr;
             // Write FF sentinels at relative offsets, then the teleport block.
             byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
             byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
@@ -523,35 +514,6 @@ namespace TeleportTrainer
                 lblStatus.Text = "Teleported: " + opt.Label + " (FF4=" + w1 + " FF32=" + w2 + " TP=" + w3 + (noDoor ? " +extras" : "") + ")";
             else
                 lblStatus.Text = "WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").";
-        }
-
-        private void BtnScan_Click(object sender, EventArgs e)
-        {
-            Process[] procs = Process.GetProcessesByName("game");
-            if (procs.Length == 0)
-            {
-                lblStatus.Text = "game.exe not running.";
-                return;
-            }
-            int pid = procs[0].Id;
-            IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, false, pid);
-            if (hProc == IntPtr.Zero)
-            {
-                lblStatus.Text = "OpenProcess (read) failed. Run as admin.";
-                return;
-            }
-            // search for any option's byte pattern in a single pass over memory
-            IntPtr foundAddr = SearchMemoryAll(hProc);
-            CloseHandle(hProc);
-            if (foundAddr != IntPtr.Zero)
-            {
-                txtAddress.Text = "0x" + foundAddr.ToInt64().ToString("X");
-                lblStatus.Text = "Address found: " + txtAddress.Text;
-            }
-            else
-            {
-                lblStatus.Text = "Pattern not found in memory. Teleport once first, then scan.";
-            }
         }
 
         // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
