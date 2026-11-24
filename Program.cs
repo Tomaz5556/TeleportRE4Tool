@@ -623,7 +623,7 @@ namespace TPT
                     }
                     catch (OperationCanceledException)
                     {
-                        SetStatus("Cancelado!");
+                        SetStatus("Erro ao cancelar!");
                         return;
                     }
                     if (token.IsCancellationRequested)
@@ -696,7 +696,7 @@ namespace TPT
             }
             catch (OperationCanceledException)
             {
-                SetStatus("Cancelado!");
+                SetStatus("Erro ao cancelar!");
             }
             finally
             {
