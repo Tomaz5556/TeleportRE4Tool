@@ -20,7 +20,6 @@ namespace TPT
     public class MainForm : Form
     {
         private readonly ListBox listBox;
-        private readonly TextBox txtAddress;
         private readonly Button btnTeleport;
         private readonly Button btnCancel;
         private readonly Label lblStatus;
@@ -382,7 +381,7 @@ namespace TPT
 
         public MainForm()
         {
-            Text = "Teleport Tool by tomazm";
+            Text = "Teleport Tool - RE4 2007";
             Width = 675;
             Height = 560;
             StartPosition = FormStartPosition.CenterScreen;
@@ -407,34 +406,16 @@ namespace TPT
 
             var inputPanel = new Panel
             {
-                Width = 435,
+                Width = 175,
                 Height = 36,
                 Top = 0
             };
             panel.Controls.Add(inputPanel);
 
-            var lblAddr = new Label
-            {
-                Text = "Target address (hex):",
-                Left = 0,
-                Top = 10,
-                Width = 130
-            };
-            inputPanel.Controls.Add(lblAddr);
-
-            txtAddress = new TextBox
-            {
-                Text = "0x00000000",
-                Left = 140,
-                Top = 8,
-                Width = 90
-            };
-            inputPanel.Controls.Add(txtAddress);
-
             btnTeleport = new Button
             {
                 Text = "Teleport",
-                Left = 260,
+                Left = 0,
                 Top = 3,
                 Width = 90,
                 Height = 30
@@ -445,7 +426,7 @@ namespace TPT
             btnCancel = new Button
             {
                 Text = "Cancel",
-                Left = 355,
+                Left = 95,
                 Top = 3,
                 Width = 80,
                 Height = 30
@@ -459,7 +440,7 @@ namespace TPT
                 Left = 0,
                 Top = 40,
                 Width = panel.ClientSize.Width,
-                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+                TextAlign = ContentAlignment.MiddleCenter
             };
             panel.Controls.Add(lblStatus);
 
@@ -474,6 +455,7 @@ namespace TPT
         private CancellationTokenSource _cts;
         private volatile bool _running;
         private volatile bool _patched;
+        private string _lastTeleportLabel;
         private long _patchAddr;
         private byte[] _origFF4;
         private byte[] _origFF32;
@@ -527,6 +509,7 @@ namespace TPT
                     if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, _origExtra23.Length, out _);
                 }
                 _patched = false;
+                _lastTeleportLabel = null;
                 SetStatus("Teleport cancelado.");
             }
             finally
@@ -541,6 +524,13 @@ namespace TPT
             {
                 SetStatus("Scanning memory...");
                 Option opt = Options[selIndex];
+                if (_lastTeleportLabel != null && _lastTeleportLabel == opt.Label)
+                {
+                    SetStatus("O teleporte já está indo para " + opt.Label + " !");
+                    _running = false;
+                    _cts = null;
+                    return;
+                }
 
                 Process[] procs = Process.GetProcessesByName("game");
                 if (procs.Length == 0)
@@ -557,10 +547,32 @@ namespace TPT
                 }
                 try
                 {
-                    IntPtr foundAddr;
+                    IntPtr foundAddr = IntPtr.Zero;
+                    IntPtr lastAddr = IntPtr.Zero;
+                    int stableCount = 0;
                     try
                     {
-                        foundAddr = SearchMemoryAll(hProc, token);
+                        for (int attempt = 0; attempt < 3; attempt++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            IntPtr cur = SearchMemoryAll(hProc, token);
+                            if (cur != IntPtr.Zero)
+                            {
+                                foundAddr = cur;
+                                if (cur == lastAddr)
+                                {
+                                    stableCount++;
+                                    if (stableCount >= 2) break;
+                                }
+                                else
+                                {
+                                    lastAddr = cur;
+                                    stableCount = 1;
+                                }
+                            }
+                            if (attempt < 2)
+                                Thread.Sleep(400);
+                        }
                     }
                     catch (OperationCanceledException)
                     {
@@ -577,7 +589,6 @@ namespace TPT
                         SetStatus("Pattern not found in memory. Teleport once first, then scan.");
                         return;
                     }
-                    SetAddress("0x" + foundAddr.ToInt64().ToString("X"));
                     IntPtr addr = foundAddr;
 
                     // Extras forced in all scenarios
@@ -627,7 +638,10 @@ namespace TPT
                         return;
                     }
                     if (ok && ok1 && ok2 && okExtra)
+                    {
+                        _lastTeleportLabel = opt.Label;
                         SetStatus("Teleport para " + opt.Label);
+                    }
                     else
                         SetStatus("WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").");
                 }
@@ -651,12 +665,6 @@ namespace TPT
         {
             if (InvokeRequired) Invoke(new Action(() => lblStatus.Text = s));
             else lblStatus.Text = s;
-        }
-
-        private void SetAddress(string s)
-        {
-            if (InvokeRequired) Invoke(new Action(() => txtAddress.Text = s));
-            else txtAddress.Text = s;
         }
 
         // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
@@ -822,9 +830,20 @@ namespace TPT
                 {
                     if (allFound) return;
                     token.ThrowIfCancellationRequested();
-                    int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
+                    int chunk = (int)Math.Min(4 * 1024 * 1024, regionSize - offset);
                     byte[] buf = new byte[chunk];
-                    if (ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0)
+                    if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0))
+                    {
+                        chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
+                        if (chunk <= 0) { offset += (int)(regionSize - offset); continue; }
+                        buf = new byte[chunk];
+                        if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out read) && read > 0))
+                        {
+                            offset += chunk;
+                            continue;
+                        }
+                    }
+                    if (read <= 0) { offset += chunk; continue; }
                     {
                         int st = 0;
                         for (int i = 0; i < read; i++)
