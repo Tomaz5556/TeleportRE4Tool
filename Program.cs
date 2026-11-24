@@ -22,6 +22,7 @@ namespace TeleportTrainer
         private ListBox listBox;
         private TextBox txtAddress;
         private Button btnTeleport;
+        private Button btnCancel;
 
         private Label lblStatus;
         private Label lblCount;
@@ -427,6 +428,16 @@ namespace TeleportTrainer
             btnTeleport.Click += BtnTeleport_Click;
             panel.Controls.Add(btnTeleport);
 
+            btnCancel = new Button
+            {
+                Text = "Cancel",
+                Left = 365,
+                Top = 6,
+                Width = 80
+            };
+            btnCancel.Click += BtnCancel_Click;
+            panel.Controls.Add(btnCancel);
+
             lblStatus = new Label
             {
                 Text = "Select an option and click Teleport. Run as admin for memory access.",
@@ -446,74 +457,193 @@ namespace TeleportTrainer
             panel.Controls.Add(lblCount);
         }
 
+        private CancellationTokenSource _cts;
+        private volatile bool _running;
+        private volatile bool _patched;
+        private long _patchAddr;
+        private byte[] _origFF4;
+        private byte[] _origFF32;
+        private byte[] _origTeleport;
+        private byte[] _origExtra43;
+        private byte[] _origExtra40;
+        private byte[] _origExtra23;
+        private bool _origNoDoor;
+
         private void BtnTeleport_Click(object sender, EventArgs e)
         {
+            if (_running) return;
             if (listBox.SelectedIndex < 0)
             {
                 lblStatus.Text = "No option selected.";
                 return;
             }
-            Option opt = Options[listBox.SelectedIndex];
+            _running = true;
+            _cts = new CancellationTokenSource();
+            CancellationToken token = _cts.Token;
+            int selIndex = listBox.SelectedIndex;
+            Task.Run(() => DoTeleport(selIndex, token));
+        }
 
+        private void BtnCancel_Click(object sender, EventArgs e)
+        {
+            try { _cts?.Cancel(); } catch { }
+            RestorePatch();
+        }
+
+        private void RestorePatch()
+        {
+            if (!_patched) return;
             Process[] procs = Process.GetProcessesByName("game");
-            if (procs.Length == 0)
-            {
-                lblStatus.Text = "game.exe not running.";
-                return;
-            }
+            if (procs.Length == 0) { SetStatus("game.exe not running."); return; }
             int pid = procs[0].Id;
-            IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
-            if (hProc == IntPtr.Zero)
+            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, pid);
+            if (hProc == IntPtr.Zero) { SetStatus("OpenProcess failed. Run as admin."); return; }
+            try
             {
-                lblStatus.Text = "OpenProcess failed. Run as admin.";
-                return;
+                IntPtr addr = new IntPtr(_patchAddr);
+                int w = 0;
+                if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), _origFF4, _origFF4.Length, out w);
+                if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, _origFF32.Length, out w);
+                if (_origTeleport != null) WriteProcessMemory(hProc, addr, _origTeleport, _origTeleport.Length, out w);
+                if (_origNoDoor)
+                {
+                    if (_origExtra43 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, _origExtra43.Length, out w);
+                    if (_origExtra40 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, _origExtra40.Length, out w);
+                    if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, _origExtra23.Length, out w);
+                }
+                _patched = false;
+                SetStatus("Teleport cancelado.");
             }
-
-            // Find address automatically (former Find Address logic)
-            IntPtr foundAddr = SearchMemoryAll(hProc);
-            if (foundAddr == IntPtr.Zero)
+            finally
             {
                 CloseHandle(hProc);
-                lblStatus.Text = "Pattern not found in memory. Teleport once first, then scan.";
-                return;
             }
-            txtAddress.Text = "0x" + foundAddr.ToInt64().ToString("X");
-            IntPtr addr = foundAddr;
-            // Write FF sentinels at relative offsets, then the teleport block.
-            byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
-            byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
-            int w1 = 0, w2 = 0, w3 = 0, w4 = 0, w5 = 0, w6 = 0;
+        }
 
-            // Detect scenario variant BEFORE overwriting: byte at (addr - 76): 0x04 = sem porta, 0x08 = com porta
-            byte[] varByte = new byte[1];
-            int rv = 0;
-            bool hasVar = ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), varByte, 1, out rv) && rv == 1;
-            bool noDoor = hasVar && varByte[0] == 0x04;
-
-            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out w1);
-            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out w2);
-
-            bool okExtra = true;
-            if (noDoor)
+        private void DoTeleport(int selIndex, CancellationToken token)
+        {
+            try
             {
-                // rel -43: 05 -> 01
-                byte[] b01 = new byte[] { 0x01 };
-                bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), b01, 1, out w4);
-                // rel -40: ensure 08
-                byte[] b08 = new byte[] { 0x08 };
-                bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), b08, 1, out w5);
-                // rel -23/-22: 2D 10 -> 2D 37
-                byte[] b2d37 = new byte[] { 0x2D, 0x37 };
-                bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), b2d37, 2, out w6);
-                okExtra = a && b && c;
-            }
+                SetStatus("Scanning memory...");
+                Option opt = Options[selIndex];
 
-            bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out w3);
-            CloseHandle(hProc);
-            if (ok && ok1 && ok2 && okExtra)
-                lblStatus.Text = "Teleported: " + opt.Label + " (FF4=" + w1 + " FF32=" + w2 + " TP=" + w3 + (noDoor ? " +extras" : "") + ")";
-            else
-                lblStatus.Text = "WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").";
+                Process[] procs = Process.GetProcessesByName("game");
+                if (procs.Length == 0)
+                {
+                    SetStatus("game.exe not running.");
+                    return;
+                }
+                int pid = procs[0].Id;
+                IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
+                if (hProc == IntPtr.Zero)
+                {
+                    SetStatus("OpenProcess failed. Run as admin.");
+                    return;
+                }
+                try
+                {
+                    IntPtr foundAddr;
+                    try
+                    {
+                        foundAddr = SearchMemoryAll(hProc, token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        SetStatus("Cancelled.");
+                        return;
+                    }
+                    if (token.IsCancellationRequested)
+                    {
+                        SetStatus("Cancelled.");
+                        return;
+                    }
+                    if (foundAddr == IntPtr.Zero)
+                    {
+                        SetStatus("Pattern not found in memory. Teleport once first, then scan.");
+                        return;
+                    }
+                    SetAddress("0x" + foundAddr.ToInt64().ToString("X"));
+                    IntPtr addr = foundAddr;
+
+                    byte[] varByte = new byte[1];
+                    int rv = 0;
+                    bool hasVar = ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), varByte, 1, out rv) && rv == 1;
+                    bool noDoor = hasVar && varByte[0] == 0x04;
+
+                    byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
+                    byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
+                    int w1 = 0, w2 = 0, w3 = 0, w4 = 0, w5 = 0, w6 = 0;
+
+                    // snapshot originals for Cancel/restore
+                    _origFF4 = new byte[4];
+                    _origFF32 = new byte[32];
+                    _origTeleport = new byte[opt.Values.Length];
+                    _origExtra43 = new byte[1];
+                    _origExtra40 = new byte[1];
+                    _origExtra23 = new byte[2];
+                    int rr = 0;
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), _origFF4, 4, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, 32, out rr);
+                    ReadProcessMemory(hProc, addr, _origTeleport, opt.Values.Length, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, 2, out rr);
+                    _origNoDoor = noDoor;
+                    _patchAddr = addr.ToInt64();
+                    _patched = true;
+
+                    bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out w1);
+                    bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out w2);
+
+                    bool okExtra = true;
+                    if (noDoor)
+                    {
+                        byte[] b01 = new byte[] { 0x01 };
+                        bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), b01, 1, out w4);
+                        byte[] b08 = new byte[] { 0x08 };
+                        bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), b08, 1, out w5);
+                        byte[] b2d37 = new byte[] { 0x2D, 0x37 };
+                        bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), b2d37, 2, out w6);
+                        okExtra = a && b && c;
+                    }
+
+                    bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out w3);
+                    if (token.IsCancellationRequested)
+                    {
+                        SetStatus("Cancelled.");
+                        return;
+                    }
+                    if (ok && ok1 && ok2 && okExtra)
+                        SetStatus("Teleported: " + opt.Label + " (FF4=" + w1 + " FF32=" + w2 + " TP=" + w3 + (noDoor ? " +extras" : "") + ")");
+                    else
+                        SetStatus("WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").");
+                }
+                finally
+                {
+                    CloseHandle(hProc);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                SetStatus("Cancelled.");
+            }
+            finally
+            {
+                _running = false;
+                _cts = null;
+            }
+        }
+
+        private void SetStatus(string s)
+        {
+            if (InvokeRequired) Invoke(new Action(() => lblStatus.Text = s));
+            else lblStatus.Text = s;
+        }
+
+        private void SetAddress(string s)
+        {
+            if (InvokeRequired) Invoke(new Action(() => txtAddress.Text = s));
+            else txtAddress.Text = s;
         }
 
         // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
@@ -629,7 +759,7 @@ namespace TeleportTrainer
 
         // Collect committed, readable regions.
         // mode: 0 = all, 1 = only MEM_PRIVATE, 2 = exclude MEM_PRIVATE
-        private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode)
+        private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode, CancellationToken token)
         {
             var regions = new List<Tuple<long,long>>();
             long current = 0;
@@ -637,6 +767,7 @@ namespace TeleportTrainer
             int mbiSize = Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION));
             while (true)
             {
+                token.ThrowIfCancellationRequested();
                 int r = VirtualQueryEx(hProc, new IntPtr(current), out mbi, mbiSize);
                 if (r == 0) break;
                 long baseAddr = mbi.BaseAddress.ToInt64();
@@ -659,7 +790,7 @@ namespace TeleportTrainer
 
         // Scan a set of regions in parallel, aggregate first occurrence per option (min address).
         private static Tuple<bool,int> ScanRegions(IntPtr hProc, List<Tuple<long,long>> regions,
-            bool[] found, IntPtr[] foundAddr)
+            bool[] found, IntPtr[] foundAddr, CancellationToken token)
         {
             bool anyFound = false;
             int remaining = 0;
@@ -670,6 +801,7 @@ namespace TeleportTrainer
             Parallel.ForEach(regions, (reg, state) =>
             {
                 if (allFound) { state.Stop(); return; }
+                token.ThrowIfCancellationRequested();
                 long baseAddr = reg.Item1;
                 long regionSize = reg.Item2;
                 long offset = 0;
@@ -677,6 +809,7 @@ namespace TeleportTrainer
                 while (offset < regionSize)
                 {
                     if (allFound) return;
+                    token.ThrowIfCancellationRequested();
                     int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
                     byte[] buf = new byte[chunk];
                     int read = 0;
@@ -725,7 +858,7 @@ namespace TeleportTrainer
             return Tuple.Create(anyFound, remaining);
         }
 
-        private IntPtr SearchMemoryAll(IntPtr hProc)
+        private IntPtr SearchMemoryAll(IntPtr hProc, CancellationToken token)
         {
             BuildAc();
             int n = Options.Count;
@@ -735,16 +868,16 @@ namespace TeleportTrainer
             bool anyFound = false;
 
             // First pass: only MEM_PRIVATE regions (fast path)
-            var privateRegions = CollectRegions(hProc, 1);
-            var r1 = ScanRegions(hProc, privateRegions, found, foundAddr);
+            var privateRegions = CollectRegions(hProc, 1, token);
+            var r1 = ScanRegions(hProc, privateRegions, found, foundAddr, token);
             anyFound = r1.Item1;
             remaining = r1.Item2;
 
             // Fallback: if highest-priority option not found, scan non-private regions
-            if (!found[0])
+            if (!found[0] && !token.IsCancellationRequested)
             {
-                var otherRegions = CollectRegions(hProc, 2);
-                var r2 = ScanRegions(hProc, otherRegions, found, foundAddr);
+                var otherRegions = CollectRegions(hProc, 2, token);
+                var r2 = ScanRegions(hProc, otherRegions, found, foundAddr, token);
                 anyFound = anyFound || r2.Item1;
                 remaining = r2.Item2;
             }
