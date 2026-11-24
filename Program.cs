@@ -20,6 +20,7 @@ namespace TPT
     public class MainForm : Form
     {
         private readonly ListBox listBox;
+        private readonly TextBox txtGameName;
         private readonly Button btnTeleport;
         private readonly Button btnCancel;
         private readonly Label lblStatus;
@@ -390,7 +391,7 @@ namespace TPT
             {
                 Dock = DockStyle.Top,
                 Height = 420,
-                Font = new System.Drawing.Font("Consolas", 12)
+                Font = new Font("Consolas", 12)
             };
             foreach (var o in Options)
                 listBox.Items.Add(o.Label + "    " + BitConverter.ToString(o.Values).Replace("-", " "));
@@ -399,18 +400,44 @@ namespace TPT
             var panel = new Panel
             {
                 Dock = DockStyle.Bottom,
-                Height = 100,
-                Font = new System.Drawing.Font("Consolas", 11)
+                Height = 120,
+                Font = new Font("Consolas", 11)
             };
             Controls.Add(panel);
 
-            var inputPanel = new Panel
+            var gameNamePanel = new Panel
             {
-                Width = 175,
+                Width = 270,
                 Height = 36,
                 Top = 0
             };
-            panel.Controls.Add(inputPanel);
+            panel.Controls.Add(gameNamePanel);
+
+            var lblGameName = new Label
+            {
+                Text = "Name of Game:",
+                Left = 0,
+                Top = 10,
+                Width = 120
+            };
+            gameNamePanel.Controls.Add(lblGameName);
+
+            txtGameName = new TextBox
+            {
+                Text = "game.exe",
+                Left = 125,
+                Top = 7,
+                Width = 145
+            };
+            gameNamePanel.Controls.Add(txtGameName);
+
+            var buttonPanel = new Panel
+            {
+                Width = 175,
+                Height = 36,
+                Top = 36
+            };
+            panel.Controls.Add(buttonPanel);
 
             btnTeleport = new Button
             {
@@ -421,7 +448,7 @@ namespace TPT
                 Height = 30
             };
             btnTeleport.Click += BtnTeleport_Click;
-            inputPanel.Controls.Add(btnTeleport);
+            buttonPanel.Controls.Add(btnTeleport);
 
             btnCancel = new Button
             {
@@ -432,13 +459,13 @@ namespace TPT
                 Height = 30
             };
             btnCancel.Click += BtnCancel_Click;
-            inputPanel.Controls.Add(btnCancel);
+            buttonPanel.Controls.Add(btnCancel);
 
             lblStatus = new Label
             {
                 Text = "Select an option and click Teleport. Run as admin for memory access.",
                 Left = 0,
-                Top = 40,
+                Top = 72,
                 Width = panel.ClientSize.Width,
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -446,16 +473,19 @@ namespace TPT
 
             panel.Resize += (sender, e) =>
             {
-                inputPanel.Left = Math.Max(0, (panel.ClientSize.Width - inputPanel.Width) / 2);
+                gameNamePanel.Left = Math.Max(0, (panel.ClientSize.Width - gameNamePanel.Width) / 2);
+                buttonPanel.Left = Math.Max(0, (panel.ClientSize.Width - buttonPanel.Width) / 2);
                 lblStatus.Width = panel.ClientSize.Width;
             };
-            inputPanel.Left = Math.Max(0, (panel.ClientSize.Width - inputPanel.Width) / 2);
+            gameNamePanel.Left = Math.Max(0, (panel.ClientSize.Width - gameNamePanel.Width) / 2);
+            buttonPanel.Left = Math.Max(0, (panel.ClientSize.Width - buttonPanel.Width) / 2);
         }
 
         private CancellationTokenSource _cts;
         private volatile bool _running;
         private volatile bool _patched;
         private string _lastTeleportLabel;
+        private int _patchProcessId;
         private long _patchAddr;
         private byte[] _origFF4;
         private byte[] _origFF32;
@@ -471,14 +501,20 @@ namespace TPT
             if (_running) return;
             if (listBox.SelectedIndex < 0)
             {
-                lblStatus.Text = "No option selected.";
+                lblStatus.Text = "Nenhuma opção selecionada";
+                return;
+            }
+            string processName = GetGameProcessName();
+            if (string.IsNullOrEmpty(processName))
+            {
+                lblStatus.Text = "Digite o nome do executável do jogo";
                 return;
             }
             _running = true;
             _cts = new CancellationTokenSource();
             CancellationToken token = _cts.Token;
             int selIndex = listBox.SelectedIndex;
-            Task.Run(() => DoTeleport(selIndex, token));
+            Task.Run(() => DoTeleport(selIndex, processName, token));
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)
@@ -490,10 +526,7 @@ namespace TPT
         private void RestorePatch()
         {
             if (!_patched) return;
-            Process[] procs = Process.GetProcessesByName("game");
-            if (procs.Length == 0) { SetStatus("game.exe not running."); return; }
-            int pid = procs[0].Id;
-            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, pid);
+            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, _patchProcessId);
             if (hProc == IntPtr.Zero) { SetStatus("OpenProcess failed. Run as admin."); return; }
             try
             {
@@ -509,6 +542,7 @@ namespace TPT
                     if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, _origExtra23.Length, out _);
                 }
                 _patched = false;
+                _patchProcessId = 0;
                 _lastTeleportLabel = null;
                 SetStatus("Teleport cancelado.");
             }
@@ -518,7 +552,7 @@ namespace TPT
             }
         }
 
-        private void DoTeleport(int selIndex, CancellationToken token)
+        private void DoTeleport(int selIndex, string processName, CancellationToken token)
         {
             try
             {
@@ -532,10 +566,10 @@ namespace TPT
                     return;
                 }
 
-                Process[] procs = Process.GetProcessesByName("game");
+                Process[] procs = Process.GetProcessesByName(processName);
                 if (procs.Length == 0)
                 {
-                    SetStatus("game.exe not running.");
+                    SetStatus(processName + ".exe not running.");
                     return;
                 }
                 int pid = procs[0].Id;
@@ -614,6 +648,7 @@ namespace TPT
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, 2, out rr);
                     _origNoDoor = noDoor;
                     _patchAddr = addr.ToInt64();
+                    _patchProcessId = pid;
                     _patched = true;
 
                     bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out int w1);
@@ -659,6 +694,11 @@ namespace TPT
                 _running = false;
                 _cts = null;
             }
+        }
+
+        private string GetGameProcessName()
+        {
+            return Path.GetFileNameWithoutExtension(txtGameName.Text.Trim());
         }
 
         private void SetStatus(string s)
