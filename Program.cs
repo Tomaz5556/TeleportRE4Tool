@@ -465,6 +465,7 @@ namespace TeleportTrainer
         private byte[] _origFF32;
         private byte[] _origTeleport;
         private byte[] _origExtra43;
+        private byte[] _origExtra42;
         private byte[] _origExtra40;
         private byte[] _origExtra23;
         private bool _origNoDoor;
@@ -508,6 +509,7 @@ namespace TeleportTrainer
                 if (_origNoDoor)
                 {
                     if (_origExtra43 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, _origExtra43.Length, out w);
+                    if (_origExtra42 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), _origExtra42, _origExtra42.Length, out w);
                     if (_origExtra40 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, _origExtra40.Length, out w);
                     if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, _origExtra23.Length, out w);
                 }
@@ -565,10 +567,8 @@ namespace TeleportTrainer
                     SetAddress("0x" + foundAddr.ToInt64().ToString("X"));
                     IntPtr addr = foundAddr;
 
-                    byte[] varByte = new byte[1];
-                    int rv = 0;
-                    bool hasVar = ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), varByte, 1, out rv) && rv == 1;
-                    bool noDoor = hasVar && varByte[0] == 0x04;
+                    // Extras forced in all scenarios
+                    bool noDoor = true;
 
                     byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
                     byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
@@ -579,6 +579,7 @@ namespace TeleportTrainer
                     _origFF32 = new byte[32];
                     _origTeleport = new byte[opt.Values.Length];
                     _origExtra43 = new byte[1];
+                    _origExtra42 = new byte[1];
                     _origExtra40 = new byte[1];
                     _origExtra23 = new byte[2];
                     int rr = 0;
@@ -586,6 +587,7 @@ namespace TeleportTrainer
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, 32, out rr);
                     ReadProcessMemory(hProc, addr, _origTeleport, opt.Values.Length, out rr);
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), _origExtra42, 1, out rr);
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, 1, out rr);
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, 2, out rr);
                     _origNoDoor = noDoor;
@@ -595,17 +597,18 @@ namespace TeleportTrainer
                     bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out w1);
                     bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out w2);
 
-                    bool okExtra = true;
-                    if (noDoor)
-                    {
-                        byte[] b01 = new byte[] { 0x01 };
-                        bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), b01, 1, out w4);
-                        byte[] b08 = new byte[] { 0x08 };
-                        bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), b08, 1, out w5);
-                        byte[] b2d37 = new byte[] { 0x2D, 0x37 };
-                        bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), b2d37, 2, out w6);
-                        okExtra = a && b && c;
-                    }
+                    // Force extras in ALL scenarios (no variant detection)
+                    noDoor = true;
+                    byte[] b01 = new byte[] { 0x01 };
+                    bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), b01, 1, out w4);
+                    byte[] bff = new byte[] { 0xFF };
+                    int w7 = 0;
+                    bool a2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), bff, 1, out w7);
+                    byte[] b08 = new byte[] { 0x08 };
+                    bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), b08, 1, out w5);
+                    byte[] b2d37 = new byte[] { 0x2D, 0x37 };
+                    bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), b2d37, 2, out w6);
+                    bool okExtra = a && a2 && b && c;
 
                     bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out w3);
                     if (token.IsCancellationRequested)
