@@ -19,6 +19,14 @@ namespace TPT
 
     public class MainForm : Form
     {
+        // Offsets para ser usados no AEV
+        private const int OffFF4 = -88;
+        private const int OffFF32 = -76;
+        private const int OffExtra01 = -43;
+        private const int OffExtraFF = -42;
+        private const int OffExtra08 = -40;
+        private const int OffExtra2D37 = -23;
+
         private readonly ListBox listBox;
         private readonly TextBox txtGameName;
         private readonly Button btnTeleport;
@@ -382,7 +390,7 @@ namespace TPT
 
         public MainForm()
         {
-            Text = "Teleport Tool - RE4 2007";
+            Text = "Teleport Tool - RE4 2007 - feito por tomazm";
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Width = 675;
             Height = 560;
@@ -402,7 +410,8 @@ namespace TPT
             {
                 Dock = DockStyle.Bottom,
                 Height = 120,
-                Font = new Font("Consolas", 11)
+                Font = new Font("Consolas", 11),
+                BackColor = Color.FromArgb(220, 220, 220)
             };
             Controls.Add(panel);
 
@@ -410,7 +419,7 @@ namespace TPT
             {
                 Width = 270,
                 Height = 36,
-                Top = 0
+                Top = 5
             };
             panel.Controls.Add(gameNamePanel);
 
@@ -436,7 +445,7 @@ namespace TPT
             {
                 Width = 175,
                 Height = 36,
-                Top = 36
+                Top = 40
             };
             panel.Controls.Add(buttonPanel);
 
@@ -444,10 +453,14 @@ namespace TPT
             {
                 Text = "Teleport",
                 Left = 0,
-                Top = 3,
+                Top = 6,
                 Width = 90,
-                Height = 30
+                Height = 30,
+                BackColor = Color.FromArgb(255, 255, 255),
+                FlatStyle = FlatStyle.Flat
             };
+            btnTeleport.FlatAppearance.BorderColor = Color.Black;
+            btnTeleport.FlatAppearance.BorderSize = 1;
             btnTeleport.Click += BtnTeleport_Click;
             buttonPanel.Controls.Add(btnTeleport);
 
@@ -455,18 +468,22 @@ namespace TPT
             {
                 Text = "Cancel",
                 Left = 95,
-                Top = 3,
+                Top = 6,
                 Width = 80,
-                Height = 30
+                Height = 30,
+                BackColor = Color.FromArgb(255, 255, 255),
+                FlatStyle = FlatStyle.Flat
             };
+            btnCancel.FlatAppearance.BorderColor = Color.Black;
+            btnCancel.FlatAppearance.BorderSize = 1;
             btnCancel.Click += BtnCancel_Click;
             buttonPanel.Controls.Add(btnCancel);
 
             lblStatus = new Label
             {
-                Text = "Select an option and click Teleport. Run as admin for memory access.",
+                Text = "Escolha um cenário e clique em Teleport. Abra o trainer no modo administrador!",
                 Left = 0,
-                Top = 72,
+                Top = 80,
                 Width = panel.ClientSize.Width,
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -495,20 +512,19 @@ namespace TPT
         private byte[] _origExtra42;
         private byte[] _origExtra40;
         private byte[] _origExtra23;
-        private bool _origNoDoor;
 
         private void BtnTeleport_Click(object sender, EventArgs e)
         {
             if (_running) return;
             if (listBox.SelectedIndex < 0)
             {
-                lblStatus.Text = "Nenhuma opção selecionada";
+                lblStatus.Text = "Nenhum cenário selecionado!";
                 return;
             }
             string processName = GetGameProcessName();
             if (string.IsNullOrEmpty(processName))
             {
-                lblStatus.Text = "Digite o nome do executável do jogo";
+                lblStatus.Text = "Digite o nome do executável do jogo!";
                 return;
             }
             _running = true;
@@ -528,24 +544,21 @@ namespace TPT
         {
             if (!_patched) return;
             IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, _patchProcessId);
-            if (hProc == IntPtr.Zero) { SetStatus("OpenProcess failed. Run as admin."); return; }
+            if (hProc == IntPtr.Zero) { SetStatus("Erro ao abrir. Abra o trainer no modo administrador!"); return; }
             try
             {
                 IntPtr addr = new(_patchAddr);
-                if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), _origFF4, _origFF4.Length, out _);
-                if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, _origFF32.Length, out _);
+                if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, _origFF4.Length, out _);
+                if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, _origFF32.Length, out _);
                 if (_origTeleport != null) WriteProcessMemory(hProc, addr, _origTeleport, _origTeleport.Length, out _);
-                if (_origNoDoor)
-                {
-                    if (_origExtra43 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, _origExtra43.Length, out _);
-                    if (_origExtra42 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), _origExtra42, _origExtra42.Length, out _);
-                    if (_origExtra40 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, _origExtra40.Length, out _);
-                    if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, _origExtra23.Length, out _);
-                }
+                if (_origExtra43 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), _origExtra43, _origExtra43.Length, out _);
+                if (_origExtra42 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), _origExtra42, _origExtra42.Length, out _);
+                if (_origExtra40 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), _origExtra40, _origExtra40.Length, out _);
+                if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), _origExtra23, _origExtra23.Length, out _);
                 _patched = false;
                 _patchProcessId = 0;
                 _lastTeleportLabel = null;
-                SetStatus("Teleport cancelado.");
+                SetStatus("Teleport cancelado!");
             }
             finally
             {
@@ -557,7 +570,7 @@ namespace TPT
         {
             try
             {
-                SetStatus("Scanning memory...");
+                SetStatus("Injetando na memória...");
                 Option opt = Options[selIndex];
                 if (_lastTeleportLabel != null && _lastTeleportLabel == opt.Label)
                 {
@@ -566,18 +579,17 @@ namespace TPT
                     _cts = null;
                     return;
                 }
-
                 Process[] procs = Process.GetProcessesByName(processName);
                 if (procs.Length == 0)
                 {
-                    SetStatus(processName + ".exe not running.");
+                    SetStatus(processName + ".exe não está em execução!");
                     return;
                 }
                 int pid = procs[0].Id;
                 IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
                 if (hProc == IntPtr.Zero)
                 {
-                    SetStatus("OpenProcess failed. Run as admin.");
+                    SetStatus("Erro ao abrir. Abra o trainer no modo administrador!");
                     return;
                 }
                 try
@@ -611,28 +623,26 @@ namespace TPT
                     }
                     catch (OperationCanceledException)
                     {
-                        SetStatus("Cancelled.");
+                        SetStatus("Cancelado!");
                         return;
                     }
                     if (token.IsCancellationRequested)
                     {
-                        SetStatus("Cancelled.");
+                        SetStatus("Cancelado!");
                         return;
                     }
                     if (foundAddr == IntPtr.Zero)
                     {
-                        SetStatus("Pattern not found in memory. Teleport once first, then scan.");
+                        SetStatus("Padrão não encontrado na memória!");
                         return;
                     }
                     IntPtr addr = foundAddr;
 
-                    // Extras forced in all scenarios
-                    bool noDoor = true;
-
+                    // Grupos de valores FF para serem injetados em todos os cenários
                     byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
                     byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
 
-                    // snapshot originals for Cancel/restore
+                    // Voltar para o valor original do AEV caso o usuário cancele
                     _origFF4 = new byte[4];
                     _origFF32 = new byte[32];
                     _origTeleport = new byte[opt.Values.Length];
@@ -640,37 +650,35 @@ namespace TPT
                     _origExtra42 = new byte[1];
                     _origExtra40 = new byte[1];
                     _origExtra23 = new byte[2];
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), _origFF4, 4, out int rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), _origFF32, 32, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, 4, out int rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, 32, out rr);
                     ReadProcessMemory(hProc, addr, _origTeleport, opt.Values.Length, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), _origExtra43, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), _origExtra42, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), _origExtra40, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), _origExtra23, 2, out rr);
-                    _origNoDoor = noDoor;
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), _origExtra43, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), _origExtra42, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), _origExtra40, 1, out rr);
+                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), _origExtra23, 2, out rr);
                     _patchAddr = addr.ToInt64();
                     _patchProcessId = pid;
                     _patched = true;
 
-                    bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out int w1);
-                    bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out int w2);
+                    bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), ff4, ff4.Length, out int w1);
+                    bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), ff32, ff32.Length, out int w2);
 
-                    // Force extras in ALL scenarios (no variant detection)
-                    noDoor = true;
+                    // Injetar esses valores em todos os cenários
                     byte[] b01 = [0x01];
-                    bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 43), b01, 1, out int w4);
+                    bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), b01, 1, out int w4);
                     byte[] bff = [0xFF];
-                    bool a2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 42), bff, 1, out int w7);
+                    bool a2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), bff, 1, out int w7);
                     byte[] b08 = [0x08];
-                    bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 40), b08, 1, out int w5);
+                    bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), b08, 1, out int w5);
                     byte[] b2d37 = [0x2D, 0x37];
-                    bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 23), b2d37, 2, out int w6);
+                    bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), b2d37, 2, out int w6);
                     bool okExtra = a && a2 && b && c;
 
                     bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out int w3);
                     if (token.IsCancellationRequested)
                     {
-                        SetStatus("Cancelled.");
+                        SetStatus("Cancelado!");
                         return;
                     }
                     if (ok && ok1 && ok2 && okExtra)
@@ -688,7 +696,7 @@ namespace TPT
             }
             catch (OperationCanceledException)
             {
-                SetStatus("Cancelled.");
+                SetStatus("Cancelado!");
             }
             finally
             {
@@ -711,9 +719,9 @@ namespace TPT
         // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
         private static int[][] AcGoto;
         private static int[] AcFail;
-        private static List<int>[] AcOut;          // unique pattern indices
-        private static int[] AcPatLen;            // length per unique pattern
-        private static List<int>[] UniqueToOptions; // unique -> option indices
+        private static List<int>[] AcOut;
+        private static int[] AcPatLen;
+        private static List<int>[] UniqueToOptions;
         private static bool AcBuilt = false;
         private static readonly Lock AcLock = new();
 
@@ -726,7 +734,7 @@ namespace TPT
             {
                 if (AcBuilt) return;
 
-                // dedupe identical byte patterns, keep mapping to option indices
+                // Remover padrões de bytes idênticos duplicados
                 var uniqueNeedles = new List<byte[]>();
                 var uniqueToOpts = new List<List<int>>();
                 var keyToUnique = new Dictionary<string, int>();
@@ -774,7 +782,7 @@ namespace TPT
                     outs[state].Add(ui);
                 }
 
-                // failure links (BFS)
+                // failure links
                 var queue = new Queue<int>();
                 for (int c = 0; c < 256; c++)
                 {
@@ -808,7 +816,6 @@ namespace TPT
                         }
                     }
                 }
-
                 AcGoto = [.. next];
                 AcFail = [.. fail];
                 AcOut = [.. outs];
@@ -819,8 +826,7 @@ namespace TPT
             }
         }
 
-        // Collect committed, readable regions.
-        // mode: 0 = all, 1 = only MEM_PRIVATE, 2 = exclude MEM_PRIVATE
+        // Collect committed, readable regions
         private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode, CancellationToken token)
         {
             var regions = new List<Tuple<long,long>>();
@@ -849,7 +855,7 @@ namespace TPT
             return regions;
         }
 
-        // Scan a set of regions in parallel, aggregate first occurrence per option (min address).
+        // Scan a set of regions in parallel, aggregate first occurrence per option
         private static Tuple<bool,int> ScanRegions(IntPtr hProc, List<Tuple<long,long>> regions,
             bool[] found, IntPtr[] foundAddr, CancellationToken token)
         {
@@ -925,7 +931,6 @@ namespace TPT
                     offset += chunk;
                 }
             });
-
             return Tuple.Create(anyFound, remaining);
         }
 
