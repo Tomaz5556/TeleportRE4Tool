@@ -394,6 +394,8 @@ namespace TPT
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Width = 675;
             Height = 560;
+            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             StartPosition = FormStartPosition.CenterScreen;
 
             listBox = new ListBox
