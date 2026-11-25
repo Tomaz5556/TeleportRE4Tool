@@ -75,12 +75,11 @@ namespace TPT
             new ("r118 >> r112", "E3 08 A1 C5 74 68 04 C6 53 56 4B 47 30 5B 1D C0 01 12"),
             new ("r111 >> r113", "0F F9 39 C7 60 46 3D 41 7D 5C DD 45 8E CA F1 3F 01 13"),
             new ("r11c >> r113", "27 86 B4 44 F6 20 12 44 3F C5 DA C6 9A 23 C5 BF 01 13"),
-            new ("r108 >> r117 Out", "42 2D 2A 46 40 B1 A4 C4 2B 97 D1 45 E2 E4 3B 40 01 17"),
-            new ("r118 >> r117 Out", "19 2E 2A 46 87 62 A4 C4 94 62 D1 45 C2 7B 47 C0 01 17"),
+            new ("r118 >> r117 (Fora)", "19 2E 2A 46 87 62 A4 C4 94 62 D1 45 C2 7B 47 C0 01 17"),
             new ("r118 >> r117", "05 F2 28 43 19 00 7A C4 CE C4 BD 45 88 06 3B 40 01 17"),
             new ("r112 >> r118", "32 6D 2D C7 28 64 1D 43 1E 4D 61 C6 7C 5D 09 40 01 18"),
             new ("r117 >> r118", "DC E7 B6 46 C4 E6 3B 46 98 E3 CE C6 F4 08 B6 BF 01 18"),
-            new ("r117 >> r118 Out", "FF 83 E3 46 98 7A 2A 46 24 70 81 C6 C9 28 CF BF 01 18"),
+            new ("r117 >> r118 (Fora)", "FF 83 E3 46 98 7A 2A 46 24 70 81 C6 C9 28 CF BF 01 18"),
             new ("r119 >> r118", "FF AC B8 47 6D 1E 0D 45 20 E8 4A 46 6C C1 EB BF 01 18"),
             new ("r10e >> r119", "B5 73 FE 47 CC E0 0B 44 C0 92 74 46 70 B5 43 C0 01 19"),
             new ("r118 >> r119", "31 EF BD 47 79 B6 0C 45 C2 21 50 46 14 06 80 3F 01 19"),
@@ -109,13 +108,13 @@ namespace TPT
             new ("r207 >> r202", "53 12 9F 46 FB 9F 0C 46 26 CD 62 C7 6E 29 D1 BE 02 02"),
             new ("r201 >> r203", "93 20 F0 C6 17 DE 81 45 27 B7 B3 C6 00 A3 3D BE 02 03"),
             new ("r207 >> r203", "7F 6A 36 C6 07 01 84 45 CF DE 21 C6 00 67 A8 BF 02 03"),
-            new ("r205 >> r204 Up", "5A 7F 15 46 FD 7F BB 45 66 07 65 C5 C4 DC DF BF 02 04"),
+            new ("r205 >> r204 (Em cima)", "5A 7F 15 46 FD 7F BB 45 66 07 65 C5 C4 DC DF BF 02 04"),
             new ("r205 >> r204", "A5 71 CD 44 00 00 A8 3B 1D 1A 32 C7 02 A4 DE BF 02 04"),
             new ("r208 >> r204", "F4 B1 06 C3 00 00 F0 BA AE BE AE C4 E0 90 3B 40 02 04"),
             new ("r209 >> r204", "00 40 1C C6 00 80 BB 45 00 D0 DE C6 9F 5A B9 3F 02 04"),
             new ("r22c >> r204", "DA EF 05 C6 00 00 5E BB D6 ED E8 C6 50 48 0C BE 02 04"),
             new ("r204 >> r205", "BE 65 7F C4 49 BD 79 45 A9 F5 2E 44 DD 1D AE 3F 02 05"),
-            new ("r204 >> r205 Up", "82 31 F3 45 51 2F 1C 46 A7 35 28 47 C8 D9 D6 3F 02 05"),
+            new ("r204 >> r205 (Em cima)", "82 31 F3 45 51 2F 1C 46 A7 35 28 47 C8 D9 D6 3F 02 05"),
             new ("r20d >> r206", "35 5F 1C 46 F8 FF F9 45 12 E9 83 C5 90 51 E0 BF 02 06"),
             new ("r20f >> r206", "D6 43 27 C6 08 00 FA 45 27 83 81 C5 80 61 C0 3F 02 06"),
             new ("r210 >> r206", "48 EF 87 42 04 00 FA 45 46 A8 17 C7 08 0E 36 BE 02 06"),
@@ -134,7 +133,7 @@ namespace TPT
             new ("r20b >> r20c", "9F B3 47 C2 F5 BF 5A 45 AD EB 13 C4 24 A1 96 3E 02 0C"),
             new ("r20f >> r20c", "92 B4 19 47 F4 BF 5A 45 21 E4 26 46 14 47 9E BF 02 0C"),
             new ("r206 >> r20d", "FE 65 D1 C6 00 00 BC 3B 91 60 24 43 C0 4E EB 3F 02 0D"),
-            new ("r206 >> r20d Up", "EB 60 A2 C6 00 00 FA 45 E6 61 86 46 CD D0 AE 3F 02 0D"),
+            new ("r206 >> r20d (Em cima)", "EB 60 A2 C6 00 00 FA 45 E6 61 86 46 CD D0 AE 3F 02 0D"),
             new ("r20e >> r20d", "7F F6 52 46 00 00 20 BB 59 6D EE 46 84 01 46 C0 02 0D"),
             new ("r20d >> r20e", "41 EB 75 46 00 00 A8 3B 74 75 ED 46 61 EC F3 3F 02 0E"),
             new ("r206 >> r20f", "19 47 AB 47 F8 DF AB 45 D5 9D 2B 47 86 A5 CC BF 02 0F"),
@@ -151,12 +150,12 @@ namespace TPT
             new ("r211 >> r213", "15 48 F2 C2 5E 00 7A 44 EA 57 D8 42 12 B7 46 40 02 13"),
             new ("r214 >> r213", "38 83 93 C6 00 00 36 BB 79 DA 4F C7 DC 1F B6 3F 02 13"),
             new ("r213 >> r214", "0F E8 08 46 5D 24 BC 44 3A 6B 18 47 D6 35 C8 BF 02 14"),
-            new ("r217 >> r214 Up", "DB C2 3C C5 D0 A8 FA 45 53 C5 A6 C6 0C 33 C0 3F 02 14"),
+            new ("r217 >> r214 (Em cima)", "DB C2 3C C5 D0 A8 FA 45 53 C5 A6 C6 0C 33 C0 3F 02 14"),
             new ("r217 >> r214", "4F F0 06 C4 40 2D A4 40 79 17 AD C6 C0 43 AC 3F 02 14"),
             new ("r218 >> r214", "8D 39 E6 46 40 84 A4 40 79 9C AF C6 8D 7A D6 BF 02 14"),
             new ("r218 >> r215", "88 8A CD 46 04 E5 38 45 E5 C4 49 41 A6 5B B3 3F 02 15"),
             new ("r211 >> r216", "9C 88 89 C3 00 00 72 BB 16 6D 72 41 CC 59 DF 3F 02 16"),
-            new ("r214 >> r217 Up", "AA 6F A0 45 D0 A8 FA 45 D1 12 80 C4 1E E4 E3 BF 02 17"),
+            new ("r214 >> r217 (Em cima)", "AA 6F A0 45 D0 A8 FA 45 D1 12 80 C4 1E E4 E3 BF 02 17"),
             new ("r214 >> r217", "A1 C8 FB 45 80 4C A4 40 04 F9 66 C4 06 BA D0 BF 02 17"),
             new ("r214 >> r218", "26 2B F1 C6 7A 96 03 C5 39 08 30 C0 DE AE BE 3F 02 18"),
             new ("r215 >> r218", "92 20 BC 46 A0 E8 3A 45 5C 82 04 43 36 94 F0 BF 02 18"),
@@ -226,7 +225,7 @@ namespace TPT
             new ("r309 >> r30e", "7D 83 7B C4 A8 D6 07 C5 D6 33 60 46 E4 30 D4 BF 03 0E"),
             new ("r30c >> r30e", "7F E1 51 C6 94 D3 D9 44 B8 10 B0 C6 12 C0 3B 40 03 0E"),
             new ("r30d >> r30f", "01 EC 5E C7 00 D8 06 C7 86 32 D5 47 40 4C BC 3F 03 0F"),
-            new ("r30b >> r310", "81 03 22 C6 00 00 BE 3B 30 D6 4D C6 8E 32 D8 BF 03 10"), // corrigir coordenada
+            new ("r30b >> r310", "00 C0 C1 C5 00 00 00 00 00 E8 CB C6 00 00 00 00 03 10"),
             new ("r311 >> r310", "81 03 22 C6 00 00 BE 3B 30 D6 4D C6 8E 32 D8 BF 03 10"),
             new ("r30d >> r311", "FF CC FE 43 00 00 72 BB 55 DE 66 45 E4 02 42 40 03 11"),
             new ("r310 >> r311", "9E 51 E7 C5 00 00 36 BB 80 83 85 C6 40 50 C8 3F 03 11"),
@@ -261,9 +260,9 @@ namespace TPT
             new ("r329 >> r327", "D2 46 76 C6 20 41 40 45 4D F7 62 45 2C 44 BC 3F 03 27"),
             new ("r327 >> r329", "46 CA 3A 46 BA 38 6F C4 3A 13 BC C5 EA 07 D1 BF 03 29"),
             new ("r330 >> r329", "98 94 1B 46 52 BD 76 C5 69 4F 54 46 FB 70 48 40 03 29"),
-            new ("r330 >> r329 Up", "FE 44 A9 45 1C C9 66 C4 FD 8E 70 46 28 51 F6 BF 03 29"),
+            new ("r330 >> r329 (Em cima)", "FE 44 A9 45 1C C9 66 C4 FD 8E 70 46 28 51 F6 BF 03 29"),
             new ("r329 >> r330", "62 E9 A5 C4 19 FC 90 C5 03 A1 1E C6 5C CD D5 BD 03 30"),
-            new ("r329 >> r330 Up", "32 0D 75 C5 8B A4 CD C4 3F 7F 1D C6 4D B9 BA 3F 03 30"),
+            new ("r329 >> r330 (Em cima)", "32 0D 75 C5 8B A4 CD C4 3F 7F 1D C6 4D B9 BA 3F 03 30"),
             new ("r331 >> r330", "A7 27 39 C6 9C EA F1 44 71 5C 93 C5 B0 C0 14 40 03 30"),
             new ("r330 >> r331", "1A 61 F5 C6 84 A6 CD 45 01 5C FC 46 F4 BE F5 BE 03 31"),
             new ("r331 >> r332", "0B 1B 25 C7 77 0D 77 46 FD B8 36 47 8C 06 AD 3F 03 32"),
@@ -380,7 +379,7 @@ namespace TPT
         {
             Text = "Teleport Tool - RE4 2007 - feito por tomazm";
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            Width = 675;
+            Width = 740;
             Height = 560;
             MaximizeBox = false;
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -390,10 +389,11 @@ namespace TPT
             {
                 Dock = DockStyle.Top,
                 Height = 420,
-                Font = new Font("Consolas", 12)
+                Font = new Font("Consolas", 12),
+                BackColor = Color.FromArgb(249, 249, 249)
             };
             foreach (var o in Options)
-                listBox.Items.Add(o.Label + "    " + BitConverter.ToString(o.Values).Replace("-", " "));
+                listBox.Items.Add(o.Label.PadRight(22) + "  " + BitConverter.ToString(o.Values).Replace("-", " "));
             Controls.Add(listBox);
 
             var panel = new Panel
