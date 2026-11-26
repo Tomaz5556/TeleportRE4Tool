@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <AssemblyName>Teleport Tool - RE4 2007</AssemblyName>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net11.0-windows</TargetFramework>
     <ApplicationIcon>icon.ico</ApplicationIcon>
