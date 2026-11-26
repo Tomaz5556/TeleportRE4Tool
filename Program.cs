@@ -564,7 +564,7 @@ namespace TPT
                 Option opt = Options[selIndex];
                 if (_lastTeleportLabel != null && _lastTeleportLabel == opt.Label)
                 {
-                    SetStatus("O teleporte já está indo para " + opt.Label + " !");
+                    SetStatus("O teleport já está pronto para " + opt.Label + " !");
                     _running = false;
                     _cts = null;
                     return;
