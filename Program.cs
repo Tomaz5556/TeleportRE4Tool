@@ -22,10 +22,6 @@ namespace Tptre4
         // Offsets para ser usados no AEV
         private const int OffFF4 = -88;
         private const int OffFF32 = -76;
-        private const int OffExtra01 = -43;
-        private const int OffExtraFF = -42;
-        private const int OffExtra08 = -40;
-        private const int OffExtra2D37 = -23;
 
         private readonly ListBox listBox;
         private readonly TextBox txtGameName;
@@ -499,10 +495,6 @@ namespace Tptre4
         private byte[] _origFF4;
         private byte[] _origFF32;
         private byte[] _origTeleport;
-        private byte[] _origExtra43;
-        private byte[] _origExtra42;
-        private byte[] _origExtra40;
-        private byte[] _origExtra23;
 
         private void BtnTeleport_Click(object sender, EventArgs e)
         {
@@ -542,10 +534,6 @@ namespace Tptre4
                 if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, _origFF4.Length, out _);
                 if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, _origFF32.Length, out _);
                 if (_origTeleport != null) WriteProcessMemory(hProc, addr, _origTeleport, _origTeleport.Length, out _);
-                if (_origExtra43 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), _origExtra43, _origExtra43.Length, out _);
-                if (_origExtra42 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), _origExtra42, _origExtra42.Length, out _);
-                if (_origExtra40 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), _origExtra40, _origExtra40.Length, out _);
-                if (_origExtra23 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), _origExtra23, _origExtra23.Length, out _);
                 _patched = false;
                 _patchProcessId = 0;
                 _lastTeleportLabel = null;
@@ -637,34 +625,16 @@ namespace Tptre4
                     _origFF4 = new byte[4];
                     _origFF32 = new byte[32];
                     _origTeleport = new byte[opt.Values.Length];
-                    _origExtra43 = new byte[1];
-                    _origExtra42 = new byte[1];
-                    _origExtra40 = new byte[1];
-                    _origExtra23 = new byte[2];
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, 4, out int rr);
                     ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, 32, out rr);
                     ReadProcessMemory(hProc, addr, _origTeleport, opt.Values.Length, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), _origExtra43, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), _origExtra42, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), _origExtra40, 1, out rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), _origExtra23, 2, out rr);
                     _patchAddr = addr.ToInt64();
                     _patchProcessId = pid;
                     _patched = true;
 
                     bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), ff4, ff4.Length, out int w1);
                     bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), ff32, ff32.Length, out int w2);
-
-                    // Injetar esses valores em todos os cenários
-                    byte[] b01 = [0x01];
-                    bool a = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra01), b01, 1, out int w4);
-                    byte[] bff = [0xFF];
-                    bool a2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtraFF), bff, 1, out int w7);
-                    byte[] b08 = [0x08];
-                    bool b = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra08), b08, 1, out int w5);
-                    byte[] b2d37 = [0x2D, 0x37];
-                    bool c = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffExtra2D37), b2d37, 2, out int w6);
-                    bool okExtra = a && a2 && b && c;
+                    bool okExtra = true;
 
                     bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out int w3);
                     if (token.IsCancellationRequested)
