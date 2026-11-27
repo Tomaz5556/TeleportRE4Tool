@@ -19,6 +19,9 @@ namespace Tptre4
 
     public partial class MainForm : Form
     {
+        private const int OffFF4 = -88;
+        private const int OffFF32 = -76;
+
         private readonly ListBox listBox;
         private readonly TextBox txtAddress;
         private readonly TextBox txtGameName;
@@ -555,8 +558,8 @@ namespace Tptre4
             // Grupos de valores FF para serem injetados em todos os cenários
             byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
             byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
-            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out _);
-            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out _);
+            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), ff4, ff4.Length, out _);
+            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), ff32, ff32.Length, out _);
             bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out _);
             CloseHandle(hProc);
             if (ok && ok1 && ok2)
@@ -589,8 +592,8 @@ namespace Tptre4
             byte[] zero4 = new byte[4];
             byte[] zero32 = new byte[32];
             byte[] zero18 = new byte[18];
-            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), zero4, zero4.Length, out _);
-            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), zero32, zero32.Length, out _);
+            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), zero4, zero4.Length, out _);
+            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), zero32, zero32.Length, out _);
             bool ok3 = WriteProcessMemory(hProc, addr, zero18, zero18.Length, out _);
             CloseHandle(hProc);
             if (ok1 && ok2 && ok3)
@@ -733,6 +736,8 @@ namespace Tptre4
             }
         }
 
+        private static bool IsReadableProtect(uint protect) => protect == 0x02 || protect == 0x04 || protect == 0x20 || protect == 0x40 || protect == 0x80;
+
         // Collect committed, readable regions
         private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode)
         {
@@ -745,8 +750,7 @@ namespace Tptre4
                 if (r == 0) break;
                 long baseAddr = mbi.BaseAddress.ToInt64();
                 long regionSize = mbi.RegionSize.ToInt64();
-                if (mbi.State == 0x1000 && regionSize > 0 &&
-                    (mbi.Protect == 0x02 || mbi.Protect == 0x04 || mbi.Protect == 0x20 || mbi.Protect == 0x40 || mbi.Protect == 0x80))
+                if (mbi.State == 0x1000 && regionSize > 0 && IsReadableProtect(mbi.Protect))
                 {
                     bool isPrivate = mbi.Type == MEM_PRIVATE;
                     bool include = (mode == 0) || (mode == 1 && isPrivate) || (mode == 2 && !isPrivate);
@@ -780,9 +784,20 @@ namespace Tptre4
                 while (offset < regionSize)
                 {
                     if (allFound) return;
-                    int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
+                    int chunk = (int)Math.Min(4 * 1024 * 1024, regionSize - offset);
                     byte[] buf = new byte[chunk];
-                    if (ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0)
+                    if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0))
+                    {
+                        chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
+                        if (chunk <= 0) { offset += (int)(regionSize - offset); continue; }
+                        buf = new byte[chunk];
+                        if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out read) && read > 0))
+                        {
+                            offset += chunk;
+                            continue;
+                        }
+                    }
+                    if (read <= 0) { offset += chunk; continue; }
                     {
                         int st = 0;
                         for (int i = 0; i < read; i++)
