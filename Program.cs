@@ -19,14 +19,12 @@ namespace Tptre4
 
     public partial class MainForm : Form
     {
-        // Offsets para ser usados no AEV
-        private const int OffFF4 = -88;
-        private const int OffFF32 = -76;
-
         private readonly ListBox listBox;
+        private readonly TextBox txtAddress;
         private readonly TextBox txtGameName;
         private readonly Button btnTeleport;
-        private readonly Button btnCancel;
+        private readonly Button btnCancelar;
+        private readonly Button btnScan;
         private readonly Label lblStatus;
 
         private static readonly List<Option> Options =
@@ -340,20 +338,19 @@ namespace Tptre4
         ];
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out int lpNumberOfBytesWritten);
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out int lpNumberOfBytesRead);
+        static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out int lpNumberOfBytesWritten);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, int dwLength);
+        static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out int lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool CloseHandle(IntPtr hObject);
+        static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, int dwLength);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool CloseHandle(IntPtr hObject);
 
         [StructLayout(LayoutKind.Sequential)]
         struct MEMORY_BASIC_INFORMATION
@@ -402,6 +399,12 @@ namespace Tptre4
             };
             Controls.Add(panel);
 
+            txtAddress = new TextBox
+            {
+                Text = "0x00000000",
+                Visible = false
+            };
+
             var gameNamePanel = new Panel
             {
                 Width = 270,
@@ -430,7 +433,7 @@ namespace Tptre4
 
             var buttonPanel = new Panel
             {
-                Width = 175,
+                Width = 290,
                 Height = 36,
                 Top = 40
             };
@@ -451,20 +454,35 @@ namespace Tptre4
             btnTeleport.Click += BtnTeleport_Click;
             buttonPanel.Controls.Add(btnTeleport);
 
-            btnCancel = new Button
+            btnCancelar = new Button
             {
-                Text = "Cancel",
-                Left = 95,
+                Text = "Cancelar",
+                Left = 100,
                 Top = 6,
-                Width = 80,
+                Width = 90,
                 Height = 30,
                 BackColor = Color.FromArgb(255, 255, 255),
                 FlatStyle = FlatStyle.Flat
             };
-            btnCancel.FlatAppearance.BorderColor = Color.Black;
-            btnCancel.FlatAppearance.BorderSize = 1;
-            btnCancel.Click += BtnCancel_Click;
-            buttonPanel.Controls.Add(btnCancel);
+            btnCancelar.FlatAppearance.BorderColor = Color.Black;
+            btnCancelar.FlatAppearance.BorderSize = 1;
+            btnCancelar.Click += BtnCancelar_Click;
+            buttonPanel.Controls.Add(btnCancelar);
+
+            btnScan = new Button
+            {
+                Text = "Injetar",
+                Left = 200,
+                Top = 6,
+                Width = 90,
+                Height = 30,
+                BackColor = Color.FromArgb(255, 255, 255),
+                FlatStyle = FlatStyle.Flat
+            };
+            btnScan.FlatAppearance.BorderColor = Color.Black;
+            btnScan.FlatAppearance.BorderSize = 1;
+            btnScan.Click += BtnScan_Click;
+            buttonPanel.Controls.Add(btnScan);
 
             lblStatus = new Label
             {
@@ -486,195 +504,123 @@ namespace Tptre4
             buttonPanel.Left = Math.Max(0, (panel.ClientSize.Width - buttonPanel.Width) / 2);
         }
 
-        private CancellationTokenSource _cts;
-        private volatile bool _running;
-        private volatile bool _patched;
-        private string _lastTeleportLabel;
-        private int _patchProcessId;
-        private long _patchAddr;
-        private byte[] _origFF4;
-        private byte[] _origFF32;
-        private byte[] _origTeleport;
+        private bool TryGetGameProcessId(out int processId)
+        {
+            processId = 0;
+            string executableName = Path.GetFileName(txtGameName.Text.Trim());
+            string processName = Path.GetFileNameWithoutExtension(executableName);
+            if (string.IsNullOrWhiteSpace(processName))
+            {
+                lblStatus.Text = "Digite o nome do executável do jogo!";
+                return false;
+            }
+
+            Process[] processes = Process.GetProcessesByName(processName);
+            if (processes.Length == 0)
+            {
+                lblStatus.Text = executableName + " não está em execução!";
+                return false;
+            }
+            processId = processes[0].Id;
+            return true;
+        }
 
         private void BtnTeleport_Click(object sender, EventArgs e)
         {
-            if (_running) return;
             if (listBox.SelectedIndex < 0)
             {
                 lblStatus.Text = "Nenhum cenário selecionado!";
                 return;
             }
-            string processName = GetGameProcessName();
-            if (string.IsNullOrEmpty(processName))
+            Option opt = Options[listBox.SelectedIndex];
+            IntPtr addr;
+            try
             {
-                lblStatus.Text = "Digite o nome do executável do jogo!";
+                addr = new IntPtr(Convert.ToInt64(txtAddress.Text, 16));
+            }
+            catch
+            {
+                lblStatus.Text = "Endereço inválido!";
                 return;
             }
-            _running = true;
-            _cts = new CancellationTokenSource();
-            CancellationToken token = _cts.Token;
-            int selIndex = listBox.SelectedIndex;
-            Task.Run(() => DoTeleport(selIndex, processName, token));
+
+            if (!TryGetGameProcessId(out int pid))
+                return;
+            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
+            if (hProc == IntPtr.Zero)
+            {
+                lblStatus.Text = "Erro ao abrir. Abra o trainer no modo administrador!";
+                return;
+            }
+            // Grupos de valores FF para serem injetados em todos os cenários
+            byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
+            byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
+            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), ff4, ff4.Length, out _);
+            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), ff32, ff32.Length, out _);
+            bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out _);
+            CloseHandle(hProc);
+            if (ok && ok1 && ok2)
+                lblStatus.Text = "Teleport para " + opt.Label;
+            else
+                lblStatus.Text = "Injeção falhou!";
         }
 
-        private void BtnCancel_Click(object sender, EventArgs e)
+        private void BtnCancelar_Click(object sender, EventArgs e)
         {
-            try { _cts?.Cancel(); } catch { }
-            RestorePatch();
-        }
-
-        private void RestorePatch()
-        {
-            if (!_patched) return;
-            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, _patchProcessId);
-            if (hProc == IntPtr.Zero) { SetStatus("Erro ao abrir. Abra o trainer no modo administrador!"); return; }
+            if (!TryGetGameProcessId(out int pid))
+                return;
+            IntPtr addr;
             try
             {
-                IntPtr addr = new(_patchAddr);
-                if (_origFF4 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, _origFF4.Length, out _);
-                if (_origFF32 != null) WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, _origFF32.Length, out _);
-                if (_origTeleport != null) WriteProcessMemory(hProc, addr, _origTeleport, _origTeleport.Length, out _);
-                _patched = false;
-                _patchProcessId = 0;
-                _lastTeleportLabel = null;
-                SetStatus("Teleport cancelado!");
+                addr = new IntPtr(Convert.ToInt64(txtAddress.Text, 16));
             }
-            finally
+            catch
             {
-                CloseHandle(hProc);
+                lblStatus.Text = "Endereço inválido!";
+                return;
             }
+            IntPtr hProc = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
+            if (hProc == IntPtr.Zero)
+            {
+                lblStatus.Text = "Erro ao abrir. Abra o trainer no modo administrador!";
+                return;
+            }
+            // Cancelar o teleport e escrever zeros onde foi cancelado
+            byte[] zero4 = new byte[4];
+            byte[] zero32 = new byte[32];
+            byte[] zero18 = new byte[18];
+            bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 88), zero4, zero4.Length, out _);
+            bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() - 76), zero32, zero32.Length, out _);
+            bool ok3 = WriteProcessMemory(hProc, addr, zero18, zero18.Length, out _);
+            CloseHandle(hProc);
+            if (ok1 && ok2 && ok3)
+                lblStatus.Text = "Teleport cancelado!";
+            else
+                lblStatus.Text = "Erro ao cancelar!";
         }
 
-        private void DoTeleport(int selIndex, string processName, CancellationToken token)
+        private void BtnScan_Click(object sender, EventArgs e)
         {
-            try
+            if (!TryGetGameProcessId(out int pid))
+                return;
+            IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, false, pid);
+            if (hProc == IntPtr.Zero)
             {
-                SetStatus("Injetando na memória...");
-                Option opt = Options[selIndex];
-                if (_lastTeleportLabel != null && _lastTeleportLabel == opt.Label)
-                {
-                    SetStatus("O teleport já está pronto para " + opt.Label + " !");
-                    _running = false;
-                    _cts = null;
-                    return;
-                }
-                Process[] procs = Process.GetProcessesByName(processName);
-                if (procs.Length == 0)
-                {
-                    SetStatus(processName + ".exe não está em execução!");
-                    return;
-                }
-                int pid = procs[0].Id;
-                IntPtr hProc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, false, pid);
-                if (hProc == IntPtr.Zero)
-                {
-                    SetStatus("Erro ao abrir. Abra o trainer no modo administrador!");
-                    return;
-                }
-                try
-                {
-                    IntPtr foundAddr = IntPtr.Zero;
-                    IntPtr lastAddr = IntPtr.Zero;
-                    int stableCount = 0;
-                    try
-                    {
-                        for (int attempt = 0; attempt < 3; attempt++)
-                        {
-                            token.ThrowIfCancellationRequested();
-                            IntPtr cur = SearchMemoryAll(hProc, token);
-                            if (cur != IntPtr.Zero)
-                            {
-                                foundAddr = cur;
-                                if (cur == lastAddr)
-                                {
-                                    stableCount++;
-                                    if (stableCount >= 2) break;
-                                }
-                                else
-                                {
-                                    lastAddr = cur;
-                                    stableCount = 1;
-                                }
-                            }
-                            if (attempt < 2)
-                                Thread.Sleep(400);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        SetStatus("Erro ao cancelar!");
-                        return;
-                    }
-                    if (token.IsCancellationRequested)
-                    {
-                        SetStatus("Cancelado!");
-                        return;
-                    }
-                    if (foundAddr == IntPtr.Zero)
-                    {
-                        SetStatus("Padrão não encontrado na memória!");
-                        return;
-                    }
-                    IntPtr addr = foundAddr;
-
-                    // Grupos de valores FF para serem injetados em todos os cenários
-                    byte[] ff4 = new byte[4]; for (int i = 0; i < 4; i++) ff4[i] = 0xFF;
-                    byte[] ff32 = new byte[32]; for (int i = 0; i < 32; i++) ff32[i] = 0xFF;
-
-                    // Voltar para o valor original do AEV caso o usuário cancele
-                    _origFF4 = new byte[4];
-                    _origFF32 = new byte[32];
-                    _origTeleport = new byte[opt.Values.Length];
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), _origFF4, 4, out int rr);
-                    ReadProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), _origFF32, 32, out rr);
-                    ReadProcessMemory(hProc, addr, _origTeleport, opt.Values.Length, out rr);
-                    _patchAddr = addr.ToInt64();
-                    _patchProcessId = pid;
-                    _patched = true;
-
-                    bool ok1 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF4), ff4, ff4.Length, out int w1);
-                    bool ok2 = WriteProcessMemory(hProc, new IntPtr(addr.ToInt64() + OffFF32), ff32, ff32.Length, out int w2);
-                    bool okExtra = true;
-
-                    bool ok = WriteProcessMemory(hProc, addr, opt.Values, opt.Values.Length, out int w3);
-                    if (token.IsCancellationRequested)
-                    {
-                        SetStatus("Cancelado!");
-                        return;
-                    }
-                    if (ok && ok1 && ok2 && okExtra)
-                    {
-                        _lastTeleportLabel = opt.Label;
-                        SetStatus("Teleport para " + opt.Label);
-                    }
-                    else
-                        SetStatus("WriteProcessMemory failed (FF4=" + ok1 + " FF32=" + ok2 + " TP=" + ok + " extras=" + okExtra + ").");
-                }
-                finally
-                {
-                    CloseHandle(hProc);
-                }
+                lblStatus.Text = "Erro ao abrir. Abra o trainer no modo administrador!";
+                return;
             }
-            catch (OperationCanceledException)
+            // search for any option's byte pattern in a single pass over memory
+            IntPtr foundAddr = SearchMemoryAll(hProc);
+            CloseHandle(hProc);
+            if (foundAddr != IntPtr.Zero)
             {
-                SetStatus("Erro ao cancelar!");
+                txtAddress.Text = "0x" + foundAddr.ToInt64().ToString("X");
+                lblStatus.Text = "Endereço encontrado!";
             }
-            finally
+            else
             {
-                _running = false;
-                _cts = null;
+                lblStatus.Text = "Padrão não encontrado na memória!";
             }
-        }
-
-        private string GetGameProcessName()
-        {
-            return Path.GetFileNameWithoutExtension(path: txtGameName.Text.Trim());
-        }
-
-        private void SetStatus(string s)
-        {
-            if (InvokeRequired) Invoke(new Action(() => lblStatus.Text = s));
-            else lblStatus.Text = s;
         }
 
         // Aho-Corasick automaton built once over the DEDUPLICATED option patterns.
@@ -788,14 +734,13 @@ namespace Tptre4
         }
 
         // Collect committed, readable regions
-        private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode, CancellationToken token)
+        private static List<Tuple<long,long>> CollectRegions(IntPtr hProc, int mode)
         {
             var regions = new List<Tuple<long,long>>();
             long current = 0;
             int mbiSize = Marshal.SizeOf<MEMORY_BASIC_INFORMATION>();
             while (true)
             {
-                token.ThrowIfCancellationRequested();
                 int r = VirtualQueryEx(hProc, new IntPtr(current), out MEMORY_BASIC_INFORMATION mbi, mbiSize);
                 if (r == 0) break;
                 long baseAddr = mbi.BaseAddress.ToInt64();
@@ -817,8 +762,7 @@ namespace Tptre4
         }
 
         // Scan a set of regions in parallel, aggregate first occurrence per option
-        private static Tuple<bool,int> ScanRegions(IntPtr hProc, List<Tuple<long,long>> regions,
-            bool[] found, IntPtr[] foundAddr, CancellationToken token)
+        private static Tuple<bool,int> ScanRegions(IntPtr hProc, List<Tuple<long,long>> regions, bool[] found, IntPtr[] foundAddr)
         {
             bool anyFound = false;
             int remaining = 0;
@@ -829,7 +773,6 @@ namespace Tptre4
             Parallel.ForEach(regions, (reg, state) =>
             {
                 if (allFound) { state.Stop(); return; }
-                token.ThrowIfCancellationRequested();
                 long baseAddr = reg.Item1;
                 long regionSize = reg.Item2;
                 long offset = 0;
@@ -837,21 +780,9 @@ namespace Tptre4
                 while (offset < regionSize)
                 {
                     if (allFound) return;
-                    token.ThrowIfCancellationRequested();
-                    int chunk = (int)Math.Min(4 * 1024 * 1024, regionSize - offset);
+                    int chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
                     byte[] buf = new byte[chunk];
-                    if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0))
-                    {
-                        chunk = (int)Math.Min(1024 * 1024, regionSize - offset);
-                        if (chunk <= 0) { offset += (int)(regionSize - offset); continue; }
-                        buf = new byte[chunk];
-                        if (!(ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out read) && read > 0))
-                        {
-                            offset += chunk;
-                            continue;
-                        }
-                    }
-                    if (read <= 0) { offset += chunk; continue; }
+                    if (ReadProcessMemory(hProc, new IntPtr(baseAddr + offset), buf, chunk, out int read) && read > 0)
                     {
                         int st = 0;
                         for (int i = 0; i < read; i++)
@@ -895,7 +826,7 @@ namespace Tptre4
             return Tuple.Create(anyFound, remaining);
         }
 
-        private static IntPtr SearchMemoryAll(IntPtr hProc, CancellationToken token)
+        private static IntPtr SearchMemoryAll(IntPtr hProc)
         {
             BuildAc();
             int n = Options.Count;
@@ -903,16 +834,16 @@ namespace Tptre4
             bool[] found = new bool[n];
 
             // First pass: only MEM_PRIVATE regions (fast path)
-            var privateRegions = CollectRegions(hProc, 1, token);
-            var r1 = ScanRegions(hProc, privateRegions, found, foundAddr, token);
+            var privateRegions = CollectRegions(hProc, 1);
+            var r1 = ScanRegions(hProc, privateRegions, found, foundAddr);
             bool anyFound = r1.Item1;
             _ = r1.Item2;
 
             // Fallback: if highest-priority option not found, scan non-private regions
-            if (!found[0] && !token.IsCancellationRequested)
+            if (!found[0])
             {
-                var otherRegions = CollectRegions(hProc, 2, token);
-                var r2 = ScanRegions(hProc, otherRegions, found, foundAddr, token);
+                var otherRegions = CollectRegions(hProc, 2);
+                var r2 = ScanRegions(hProc, otherRegions, found, foundAddr);
                 _ = anyFound || r2.Item1;
                 _ = r2.Item2;
             }
